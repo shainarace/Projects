@@ -1,0 +1,553 @@
+---
+title: "Reuters"
+author: "Shaina Race"
+date: "6/21/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+```
+
+## 
+
+```{r }
+#install.packages("tm.corpus.Reuters21578", repos = "http://datacube.wu.ac.at")
+#install.packages("SnowballC")
+#install.packages("textreg")
+#install.packages('tm.corpus.Reuters21578')
+
+#install.packages('text2vec')
+#install.packages('Matrix')
+#install.packages('umap')
+#install.packages('tm')
+#install.packages('slam')
+# install.packages('irlba')
+# install.packages('dbscan')
+# install.packages('plotly')
+# install.packages('gridExtra')
+# install.packages('lubridate')
+# install.packages('maxmatching')
+# install.packages('plyr')
+install.packages('rARPACK')
+install.packages('textrank')
+install.packages('rvest')
+install.packages('tidytext')
+##################################################################
+library(textrank)
+library(rvest)
+library(tidytext)
+library(dbscan)
+library(ggplot2)
+library(irlba)
+library(umap)
+library(slam)
+library(text2vec)
+library(tm.corpus.Reuters21578)
+library(SnowballC)
+library(tm)
+library(textreg)
+library(stringr)
+library(Matrix)
+library(plotly)
+library(gridExtra)
+library(lubridate)
+library(rARPACK)
+library(htmlwidgets)
+```
+
+## Prepare Data
+-1. Get datetimes from python script.
+0. Copy text of raw documents to separate vector for visualization/results.
+1. Make lower case.
+2. Remove stop words + "Reuters", punctuation, and numbers. No Stemming.
+3. Create binary term-document matrix.
+4. Remove terms occurring in less than 5 documents.
+5. Remove documents left with fewer than 10 words.
+6. Ready the datetime, topics, and heading information for visualization.
+
+```{r}
+setwd('/Users/shaina/Library/Mobile Documents/com~apple~CloudDocs/Datasets and Code/reuters21578/')
+# load('Reuters.RData')
+# # Step 0
+# # 1
+# ############################################################
+# R = Reuters21578
+# R = tm_map(R,content_transformer(tolower))
+# ############################################################
+# # 2
+# ############################################################
+# R = tm_map(R,removeWords,stopwords("en"))
+# R = tm_map(R,removePunctuation)
+# R = tm_map(R,removeNumbers)
+# #R = tm_map(R,stemDocument)
+# R = tm_map(R,removeWords, c('reuters'))
+# ############################################################
+# # 3
+# ############################################################
+# tdm = TermDocumentMatrix(R)
+# binary = weightBin(tdm)
+# ############################################################
+# # 4
+# ############################################################
+# keep_terms = row_sums(binary)>=5
+# tdm = tdm[keep_terms,]
+# ############################################################
+# # 5
+# ############################################################
+# keep_docs = col_sums(tdm)>10
+# R = R[keep_docs]
+# tdm = tdm[,keep_docs ]
+# dim(tdm)
+# length(R)
+# ############################################################
+# datetime = read.csv('datetimes.csv')
+# datetime=datetime[keep_docs,]
+# head = unlist(meta(R,"heading"))
+# ############################################################
+# raw_data = unlist(content(Reuters21578[keep_docs]))
+# raw_text=raw_data[names(raw_data)=='content']
+# raw_text = str_squish(raw_text)
+# head=raw_data[names(raw_data)=='meta.heading']
+# head = str_squish(head)
+# lewissplit = raw_data[names(raw_data)=='meta.lewissplit']
+# ############################################################
+# # add breaks for text wrapping
+# ############################################################
+# 
+# raw_text = gsub("(.{60,}?)\\s", "\\1<br>", raw_text)
+
+############################################################
+# Save data to avoid repeat processing
+############################################################
+# save(raw_text,head,lewissplit,tdm,R,datetime, file='processedV1.RData')
+load('processedV1.RData')
+```
+
+# Explore Singular Values, SVD projection
+```{r}
+# tfidf_tdm = weightTfIdf(tdm, normalize=T)
+# m =  Matrix::sparseMatrix(i=tfidf_tdm$i, 
+#                            j=tfidf_tdm$j, 
+#                            x=tfidf_tdm$v, 
+#                            dims=c(tfidf_tdm$nrow, tfidf_tdm$ncol),
+#                            dimnames = tfidf_tdm$dimnames)
+#svd = irlba(m, 150)
+#save(svd,file='svd.RData')
+load('svd.RData')
+df = data.frame(x=1:150,d=svd$d)
+g1 = ggplot(data=df, aes(x=x, y=d, group=1)) +
+  geom_line(color="red")+labs(y='Singular Values',x='index', 
+                              title='Screeplot of Reuters tf-idf Matrix, vlines at 10, 25') + 
+  geom_point() + 
+  geom_vline(xintercept = 25, linetype="dotted",  color = "blue", size=1) + 
+  geom_vline(xintercept = 10, linetype="dotted", color = "blue", size=1)
+u.df = data.frame(x=svd$v[,1], y=svd$v[,2])
+g2 = ggplot(data=u.df, aes(x=x, y=y)) +
+  geom_point()+labs(y='Second Singular Component',x='First Singular Component',
+                    title='SVD Projection of Reuters tf-idf Term-Document Matrix') 
+grid.arrange(g1,g2,ncol=1)
+```                 
+
+# UMAP Projection of 150 Singular Vectors
+
+```{r}
+# svd_ump = umap(svd$v)
+# save(svd_ump, file='svd_ump.RData')
+load('svd_ump.RData')
+
+fig <- plot_ly(type = 'scatter', mode = 'markers')
+fig <- fig %>%
+  add_trace(
+    x = svd_ump$layout[,1],
+    y = svd_ump$layout[,2],
+    text = ~paste('heading:', head ,"$<br>text: ", raw_text  ),
+    hoverinfo = 'text',
+    marker = list(color='green'),
+    showlegend = F
+  )
+
+fig
+```
+
+Outliers causing issues with the viz. Trim the outliers and examine.
+
+```{r}
+index_subset = abs(svd_ump$layout[,1]) <20 & abs(svd_ump$layout[,2]) <20
+data_subset = svd_ump$layout[index_subset,]
+raw_text_subset = raw_text[index_subset]
+head_subset = head[index_subset]
+topic_subset = topic[index_subset]
+
+fig <- plot_ly(type = 'scatter', mode = 'markers')
+fig <- fig %>%
+  add_trace(
+    x = data_subset[,1],
+    y = data_subset[,2],
+    text = ~paste('heading:', head_subset ,"$<br>text: ", raw_text_subset ),
+    hoverinfo = 'text',
+    marker = list(color='green'),
+    showlegend = F
+  )
+
+fig
+
+```
+
+# HDBSCAN to cluster
+
+Two options here - can cluster this UMAP projection or can opt to cluster some higher-dimensional projection (like the singular vectors themselves) and see how that looks in the UMAP Space. UMAP clustering seems to perform _really_ well, even better than singular vector input, so we stick with it.
+
+```{r}
+#clus = hdbscan(svd$v[,1:25],10)
+#save(clus,file='hdbscan_clusters10.RData')
+#load('hdbscan_clusters10.RData')
+#clus = hdbscan(svd_ump$layout,5)
+# save(clus,file='alldocs_hdbscan_of_map5.RData')
+load('alldocs_hdbscan_of_map5.RData')
+index_subset = abs(svd_ump$layout[,1]) <20 & abs(svd_ump$layout[,2]) <20 
+data_subset = svd_ump$layout[index_subset,]
+raw_text_subset = raw_text[index_subset]
+head_subset = head[index_subset]
+clusters = factor(clus$cluster[index_subset])
+(k = length(clus$cluster_scores))
+(n=length(clus$cluster))
+```
+
+
+We _could_ reduce the noise on the plot by omitting some of the points with high outlier scores...
+
+
+
+# Get top words for the visualization and pile all documents in a cluster into one giant cluster document for summarization.
+
+```{r}
+top.words=list()
+cluster.docs = vector()
+centroids = matrix(NA,k,2)
+mem=matrix(NA,nrow=n,ncol=k)
+
+for(i in 1:k){
+  mem[,i] = clus$cluster ==i
+  tdmi = tdm[,mem[,i]]
+  rs = row_sums(tdmi)
+  top.words[[i]] = names(rs[order(rs,decreasing=T)])[1:10]
+  cluster.docs[i] = paste(raw_text_subset[clus$cluster ==i], sep='', collapse=' ')
+  centroids[i,]=colMeans(svd_ump$layout[clus$cluster ==i,])
+}
+
+displayWords=vector()
+for(i in 1:k){displayWords[i] = paste(top.words[[i]][1:7] , sep=' ', collapse='<br>')}
+```
+
+# Grand Visualization
+
+```{r}
+
+fig <- plot_ly(type = 'scatter', mode = 'markers')
+fig <- fig %>%
+  add_trace(
+    x = data_subset[,1],
+    y = data_subset[,2],
+    text = ~paste('Heading:', head_subset ,"$<br>Text: ", raw_text_subset ,"$<br>Cluster Number: ", clusters),
+    hoverinfo = 'text',
+    color = clusters,
+    showlegend = F
+  )
+fig
+saveWidget(fig, "All_clusters_noTopics_UMAPClus_wNoise.html")
+
+```
+# Can we refine the Clustering?
+
+Not stoked that so many bigger clusters seem to get broken up even though they seem nicely separated on the UMAP projection. Would love to deal with the big center blob a bit better. Two ideas for potential refinement:
+
+1. Run the clustering again on centroids of clusters
+2. Focus on the blob and see if treating it separately helps - potentially less information overall to squeeze into the viz, allowing for more separation - divide and conquer. 
+
+The first idea is easier so we'll start there:
+
+## Clustering the centroids
+
+```{r}
+cen_clus = hdbscan(centroids, 3) # Down to 78 Clusters...Looks Pretty Good. 
+# Omit the 2 outside 
+
+fig <- plot_ly(type = 'scatter', mode = 'markers')%>%
+  add_trace(x = centroids[,1], 
+            y = centroids[,2], 
+            text = ~paste('Key Words:', displayWords,"$<br>Cluster Number: ", cen_clus$cluster ), 
+            color=factor(cen_clus$cluster),
+            showlegend = FALSE)
+fig
+
+```
+
+# Need a function that maps centroid clustering back to points.
+
+```{r}
+
+remapClusters = function(cen_clus,clus){
+  k = length(clus$cluster_scores)
+  c=as.vector(clus$cluster)
+  c[c==0]=k+1
+  cc=as.vector(cen_clus$cluster)
+  cc[k+1]=0
+  new = cc[c]
+  return(new)
+  }
+  
+```
+
+# Grand Visualization of Refined Clusters
+
+```{r}
+
+newclusters = remapClusters(cen_clus, clus) 
+
+newclusters = newclusters[index_subset]
+
+fig <- plot_ly(type = 'scatter', mode = 'markers')
+fig <- fig %>%
+  add_trace(
+    x = data_subset[,1],
+    y = data_subset[,2],
+    text = ~paste('Heading:', head_subset ,"$<br>Text: ", raw_text_subset ,"$<br>Cluster Number: ", clusters),
+    hoverinfo = 'text',
+    color = factor(newclusters),
+    showlegend = F
+  )
+fig
+saveWidget(fig, "All_centroid_refined_clusters.html")
+
+```
+Onto the next thought for refinement: divide and conquer.
+
+# Subsetting the data according to UMAP and recomputing SVD
+
+```{r}
+
+index_subset2=abs(svd_ump$layout[,1]) <2 & abs(svd_ump$layout[,2]) <2
+tdm_subset = tdm[,index_subset2]
+tdm_subset = tdm_subset[row_sums(tdm_subset)!=0, ]
+
+tfidf_tdm_subset = weightTfIdf(tdm_subset, normalize=T)
+m =  Matrix::sparseMatrix(i=tfidf_tdm_subset$i, 
+                           j=tfidf_tdm_subset$j, 
+                           x=tfidf_tdm_subset$v, 
+                           dims=c(tfidf_tdm_subset$nrow, tfidf_tdm_subset$ncol),
+                           dimnames = tfidf_tdm_subset$dimnames)
+
+svd_subset = irlba(m,15)
+svd_subset_map = umap(svd_subset$v)
+raw_text_subset2 = raw_text[index_subset2]
+head_subset2 = head[index_subset2]
+
+clus2=hdbscan(svd_subset_map$layout,4)
+
+fig2 <- plot_ly(type = 'scatter', mode = 'markers')
+fig2 <- fig2 %>%
+  add_trace(
+    x = svd_subset_map$layout[,1],
+    y = svd_subset_map$layout[,2],
+    text = ~paste('heading:', head_subset2 ,"$<br>text: ", raw_text_subset2,"$<br>Cluster Number: ", clus2$cluster ),
+    hoverinfo = 'text',
+    color=factor(clus2$cluster),
+    showlegend = F
+  )
+fig2
+
+saveWidget(fig2, 'Plots/SubsettingUMAPforRepeatSVD.html')
+
+
+```
+
+
+# Exploring Stability Scores For use in Automatic Topic Threshold
+
+```{r}
+index_subset = abs(svd_ump$layout[,1]) <20 & abs(svd_ump$layout[,2]) <20
+data_subset = svd_ump$layout[index_subset,]
+raw_text_subset = raw_text[index_subset]
+head_subset = head[index_subset]
+(k = length(clus$cluster_scores))
+(n=length(clus$cluster))
+
+mem=matrix(NA,nrow=n,ncol=k)
+for(i in 1:k){
+  mem[,i] = clus$cluster ==i
+}
+cluster_scores = mem %*% clus$cluster_scores
+
+fig <- plot_ly(type = 'scatter', mode = 'markers')
+fig <- fig %>%
+  add_trace(
+    x = data_subset[,1],
+    y = data_subset[,2],
+    text = ~paste('heading:', head_subset ,"$<br>text: ", raw_text_subset ,"$<br>topic: " ),
+    hoverinfo = 'text',
+    color = as.vector(cluster_scores[index_subset]),
+    #opacity = 0.2,
+    showlegend = F
+  )
+
+fig
+
+#saveWidget(fig, "All_clusters_stability_scores.html")
+```
+
+# Summary Sentences based on Eigenvector Centrality of Sentence Cosine Similarity Network
+
+```{r}
+
+##########################
+## Summarizing Sentences
+##########################
+# Clean up cluster.docs - remove breaks
+# remove newline, linebreak characters, substitute "." for other things that
+# end sentences, like "!" and "?" 
+SummarySentences = function(cluster.docs){
+sumSentences=list()
+for(i in 1:k){
+  t=cluster.docs[i]
+  t = gsub("\r?<br>", " ", t)
+  t = gsub("\\?", ".", t)
+  t = gsub("\\!", ".", t)
+  #t = gsub("\\:", ".", t)
+  t2 = strsplit(t, ".",fixed=TRUE)
+  t3 = as.data.frame(t2)
+  corpus <- Corpus(VectorSource(t3[,1]))
+  
+  # Remove stop words
+  corpus = tm_map(corpus, removeWords, stopwords("english"))
+  # Remove numbers
+  corpus = tm_map(corpus, removeNumbers)
+  ########################################################################
+  # Remove sparse terms and empty documents that appear after removal of stopwords and numbers
+  td1 = TermDocumentMatrix(corpus)
+  tdb=weightBin(td1)
+  td1 = td1[row_sums(tdb)>=2, ] # Remove sparse terms
+  td1 = td1[,!(col_sums(td1)==0)]   # Remove empty documents
+  t2 = unlist(t2)[!(col_sums(td1)==0)]
+  corpus = corpus[!(col_sums(td)==0)]
+  td = weightTfIdf(td1,normalize=T)
+  td = sparseMatrix(i = td$i, j=td$j, x=td$v,dims = c(td$nrow,td$ncol), dimnames = td$dimnames,repr="T")
+  
+  tdm_norm = round(apply(td, 2, function(x){x/c(sqrt(t(x)%*%x))}),2)
+   # Cosine similarity is just inner product of the normalized matrix with itself
+  C=t(tdm_norm)%*%tdm_norm
+  # Remove self loops
+  diag(C) = 0
+  # Check distribution of cosine values
+  # First singular vector of this matrix would be the eigenvector centrality of the graph
+  # of sentence similarity
+  
+  eigs = eigs_sym(C,k=1)
+  sumSentences[[i]] = paste(t2[order(abs(eigs$vectors[,1]),decreasing = T)[1:10]],sep='',collapse='. ')
+}
+sumSentences = unlist(sumSentences)
+sumSentences = gsub("(.{50,}?)\\s", "\\1<br>", sumSentences)
+return(sumSentences)
+}
+
+sumSentences = SummarySentences(cluster.docs)
+
+save(sumSentences,file='sumSentence_hdbscan_map_5.RData')
+```
+
+# Take 2 of that function
+
+```{r}
+
+##########################
+## Summarizing Sentences
+##########################
+# Clean up cluster.docs - remove breaks
+# remove newline, linebreak characters, substitute "." for other things that
+# end sentences, like "!" and "?" 
+SummarySentences = function(cluster.docs){
+sumSentences=list()
+for(i in 1:k){
+  t=cluster.docs[i]
+  t = gsub("\r?<br>", " ", t)
+  t = gsub("\\?", ".", t)
+  t = gsub("\\!", ".", t)
+  #t = gsub("\\:", ".", t)
+  t2 = strsplit(t, ".",fixed=TRUE)
+  t3 = as.data.frame(t2)
+  corpus <- Corpus(VectorSource(t3[,1]))
+  
+  # Remove stop words
+  corpus = tm_map(corpus, removeWords, stopwords("english"))
+  # Remove numbers
+  corpus = tm_map(corpus, removeNumbers)
+  ########################################################################
+  # Remove sparse terms and empty documents that appear after removal of stopwords and numbers
+  td1 = TermDocumentMatrix(corpus)
+  tdb=weightBin(td1)
+  td1 = td1[row_sums(tdb)>=2, ] # Remove sparse terms
+  td1 = td1[,!(col_sums(td1)==0)]   # Remove empty documents
+  t2 = unlist(t2)[!(col_sums(td1)==0)]
+  corpus = corpus[!(col_sums(td)==0)]
+  td = weightTfIdf(td1,normalize=T)
+  td = sparseMatrix(i = td$i, j=td$j, x=td$v,dims = c(td$nrow,td$ncol), dimnames = td$dimnames,repr="T")
+  
+  tdm_norm = round(apply(td, 2, function(x){x/c(sqrt(t(x)%*%x))}),2)
+   # Cosine similarity is just inner product of the normalized matrix with itself
+  C=t(tdm_norm)%*%tdm_norm
+  # Remove self loops
+  diag(C) = 0
+  # Check distribution of cosine values
+  # First singular vector of this matrix would be the eigenvector centrality of the graph
+  # of sentence similarity
+  
+  eigs = eigs_sym(C,k=1)
+  sumSentences[[i]] = paste(t2[order(abs(eigs$vectors[,1]),decreasing = T)[1:10]],sep='',collapse='. ')
+}
+sumSentences = unlist(sumSentences)
+sumSentences = gsub("(.{50,}?)\\s", "\\1<br>", sumSentences)
+return(sumSentences)
+}
+
+sumSentences = SummarySentences(cluster.docs)
+
+save(sumSentences,file='sumSentence_hdbscan_map_5.RData')
+
+# Summary Sentences using Tidy TextRank - WAAY TOO SLOW 
+
+Attempted to use the TextRank function from the tidy world and was _sorely_ disappointed. It took about as long to summarize a single cluster as my function did to summarize all the clusters!
+
+```{r}
+##########################
+## Summarizing Sentences
+##########################
+# Clean up cluster.docs - remove breaks
+# remove newline, linebreak characters, substitute "." for other things that
+# end sentences, like "!" and "?" 
+# SummarySentences = function(cluster.docs){
+# sumSentences=list()
+# for(i in 1:k){
+#   t=cluster.docs[i]
+#   t = gsub("\r?<br>", " ", t)
+#   t = gsub("\\?", ".", t)
+#   t = gsub("\\!", ".", t)
+#   #t = gsub("\\:", ".", t)
+#   t2 = strsplit(t, ".",fixed=TRUE)
+#   t2=unique(unlist(t2))
+#   t3 = data.frame(sentence_id = 1:length(unique(t2)), sentence = t2)
+#   article_words = t3 %>% unnest_tokens(word, sentence)
+# article_summary = textrank_sentences(data = t3,terminology = article_words)
+# 
+# sumSentences[i] = article_summary[["sentences"]] %>%
+#   arrange(desc(textrank)) %>% 
+#   slice(1:3) %>%
+#   pull(sentence)
+# }
+# return(sumSentences)
+# }
+# 
+# sumSentences = SummarySentences(cluster.docs)
+
+```
+
