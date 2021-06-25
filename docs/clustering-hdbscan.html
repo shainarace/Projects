@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="" xml:lang="">
+<head>
+
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <title>4 Clustering: HDBSCAN | 21,578 Reuters’ Newswires</title>
+  <meta name="description" content="4 Clustering: HDBSCAN | 21,578 Reuters’ Newswires" />
+  <meta name="generator" content="bookdown 0.22 and GitBook 2.6.7" />
+
+  <meta property="og:title" content="4 Clustering: HDBSCAN | 21,578 Reuters’ Newswires" />
+  <meta property="og:type" content="book" />
+  
+  
+  
+  <meta name="github-repo" content="shainarace/Reuters" />
+
+  <meta name="twitter:card" content="summary" />
+  <meta name="twitter:title" content="4 Clustering: HDBSCAN | 21,578 Reuters’ Newswires" />
+  
+  
+  
+
+<meta name="author" content="Shaina Race Bennett, PhD" />
+
+
+
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black" />
+  
+  
+<link rel="prev" href="umap.html"/>
+<link rel="next" href="the-grand-visualization.html"/>
+<script src="libs/header-attrs-2.8/header-attrs.js"></script>
+<script src="libs/jquery-3.5.1/jquery.min.js"></script>
+<link href="libs/gitbook-2.6.7/css/style.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-table.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-bookdown.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-highlight.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-search.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-fontsettings.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-clipboard.css" rel="stylesheet" />
+
+
+
+
+
+
+
+
+
+<link href="libs/anchor-sections-1.0.1/anchor-sections.css" rel="stylesheet" />
+<script src="libs/anchor-sections-1.0.1/anchor-sections.js"></script>
+<script src="libs/htmlwidgets-1.5.3/htmlwidgets.js"></script>
+<script src="libs/plotly-binding-4.9.4.1/plotly.js"></script>
+<script src="libs/typedarray-0.1/typedarray.min.js"></script>
+<link href="libs/crosstalk-1.1.1/css/crosstalk.css" rel="stylesheet" />
+<script src="libs/crosstalk-1.1.1/js/crosstalk.min.js"></script>
+<link href="libs/plotly-htmlwidgets-css-1.57.1/plotly-htmlwidgets.css" rel="stylesheet" />
+<script src="libs/plotly-main-1.57.1/plotly-latest.min.js"></script>
+
+
+<style type="text/css">
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+    color: #aaaaaa;
+  }
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code span.at { color: #7d9029; } /* Attribute */
+code span.bn { color: #40a070; } /* BaseN */
+code span.bu { } /* BuiltIn */
+code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code span.ch { color: #4070a0; } /* Char */
+code span.cn { color: #880000; } /* Constant */
+code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code span.dt { color: #902000; } /* DataType */
+code span.dv { color: #40a070; } /* DecVal */
+code span.er { color: #ff0000; font-weight: bold; } /* Error */
+code span.ex { } /* Extension */
+code span.fl { color: #40a070; } /* Float */
+code span.fu { color: #06287e; } /* Function */
+code span.im { } /* Import */
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code span.op { color: #666666; } /* Operator */
+code span.ot { color: #007020; } /* Other */
+code span.pp { color: #bc7a00; } /* Preprocessor */
+code span.sc { color: #4070a0; } /* SpecialChar */
+code span.ss { color: #bb6688; } /* SpecialString */
+code span.st { color: #4070a0; } /* String */
+code span.va { color: #19177c; } /* Variable */
+code span.vs { color: #4070a0; } /* VerbatimString */
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+</style>
+
+
+<link rel="stylesheet" href="style.css" type="text/css" />
+</head>
+
+<body>
+
+
+
+  <div class="book without-animation with-summary font-size-2 font-family-1" data-basepath=".">
+
+    <div class="book-summary">
+      <nav role="navigation">
+
+<ul class="summary">
+<li><a style="font-weight:bold, text-align:center" href="https://github.com/shainarace/Reuters">Shaina Race Bennett, PhD</a>
+
+<li class="divider"></li>
+<li class="chapter" data-level="1" data-path="index.html"><a href="index.html"><i class="fa fa-check"></i><b>1</b> Prepare Data</a></li>
+<li class="chapter" data-level="2" data-path="exploratory-analysis-via-svd.html"><a href="exploratory-analysis-via-svd.html"><i class="fa fa-check"></i><b>2</b> Exploratory Analysis via SVD</a></li>
+<li class="chapter" data-level="3" data-path="umap.html"><a href="umap.html"><i class="fa fa-check"></i><b>3</b> UMAP</a></li>
+<li class="chapter" data-level="4" data-path="clustering-hdbscan.html"><a href="clustering-hdbscan.html"><i class="fa fa-check"></i><b>4</b> Clustering: HDBSCAN</a>
+<ul>
+<li class="chapter" data-level="4.1" data-path="clustering-hdbscan.html"><a href="clustering-hdbscan.html#prepare-top-words-cluster-documents"><i class="fa fa-check"></i><b>4.1</b> Prepare top words, Cluster documents</a></li>
+</ul></li>
+<li class="chapter" data-level="5" data-path="the-grand-visualization.html"><a href="the-grand-visualization.html"><i class="fa fa-check"></i><b>5</b> The Grand Visualization</a>
+<ul>
+<li class="chapter" data-level="5.1" data-path="the-grand-visualization.html"><a href="the-grand-visualization.html#omit-some-noise-points-for-more-cluster-clarity"><i class="fa fa-check"></i><b>5.1</b> Omit some noise points for more cluster clarity</a></li>
+</ul></li>
+<li class="chapter" data-level="6" data-path="cluster-refinement.html"><a href="cluster-refinement.html"><i class="fa fa-check"></i><b>6</b> Cluster Refinement</a>
+<ul>
+<li class="chapter" data-level="6.1" data-path="cluster-refinement.html"><a href="cluster-refinement.html#refinement-idea-1-clustering-the-centroids"><i class="fa fa-check"></i><b>6.1</b> Refinement Idea 1: Clustering the centroids</a>
+<ul>
+<li class="chapter" data-level="" data-path="cluster-refinement.html"><a href="cluster-refinement.html#grand-visualization-of-refined-clusters"><i class="fa fa-check"></i>Grand Visualization of Refined Clusters</a></li>
+</ul></li>
+<li class="chapter" data-level="6.2" data-path="cluster-refinement.html"><a href="cluster-refinement.html#refinement-idea-1-divide-and-conquer"><i class="fa fa-check"></i><b>6.2</b> Refinement Idea 1: Divide and Conquer</a></li>
+</ul></li>
+<li class="divider"></li>
+<li><a href="https://github.com/rstudio/bookdown" target="blank">Published with bookdown</a></li>
+</ul>
+
+      </nav>
+    </div>
+
+    <div class="book-body">
+      <div class="body-inner">
+        <div class="book-header" role="navigation">
+          <h1>
+            <i class="fa fa-circle-o-notch fa-spin"></i><a href="./">21,578 Reuters’ Newswires</a>
+          </h1>
+        </div>
+
+        <div class="page-wrapper" tabindex="-1" role="main">
+          <div class="page-inner">
+
+            <section class="normal" id="section-">
+<div id="clustering-hdbscan" class="section level1" number="4">
+<h1><span class="header-section-number">4</span> Clustering: HDBSCAN</h1>
+<p>Two options here - can cluster this UMAP projection or can opt to cluster some higher-dimensional projection (like the singular vectors themselves) and see how that looks in the UMAP Space. UMAP clustering seems to perform <em>really</em> well, even better than singular vector input, so we stick with it. We define <code>n</code> as the number of documents and <code>k</code> as the number of clusters.</p>
+<p>Hierarchical DBSCAN is a fast algorithm that adapts the ideas of single linkage clustering (minimal spanning trees) to <a href="https://en.wikipedia.org/wiki/DBSCAN">DBSCAN</a> (density based spatial clustering of applications with noise) to create a hierarchical map of density based clusters.</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="clustering-hdbscan.html#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="do">### clus = hdbscan(svd$v[,1:25],10)</span></span>
+<span id="cb5-2"><a href="clustering-hdbscan.html#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="do">### save(clus,file=&#39;hdbscan_clusters10.RData&#39;)</span></span>
+<span id="cb5-3"><a href="clustering-hdbscan.html#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="do">### load(&#39;hdbscan_clusters10.RData&#39;)</span></span>
+<span id="cb5-4"><a href="clustering-hdbscan.html#cb5-4" aria-hidden="true" tabindex="-1"></a><span class="co">#clus = hdbscan(svd_ump$layout,5)</span></span>
+<span id="cb5-5"><a href="clustering-hdbscan.html#cb5-5" aria-hidden="true" tabindex="-1"></a><span class="co"># save(clus,file=&#39;alldocs_hdbscan_of_map5.RData&#39;)</span></span>
+<span id="cb5-6"><a href="clustering-hdbscan.html#cb5-6" aria-hidden="true" tabindex="-1"></a><span class="fu">load</span>(<span class="st">&#39;alldocs_hdbscan_of_map5.RData&#39;</span>)</span>
+<span id="cb5-7"><a href="clustering-hdbscan.html#cb5-7" aria-hidden="true" tabindex="-1"></a>n<span class="ot">=</span><span class="fu">length</span>(clus<span class="sc">$</span>cluster)</span>
+<span id="cb5-8"><a href="clustering-hdbscan.html#cb5-8" aria-hidden="true" tabindex="-1"></a>(<span class="at">k =</span> <span class="fu">length</span>(clus<span class="sc">$</span>cluster_scores))</span></code></pre></div>
+<pre><code>## [1] 733</code></pre>
+<p>We get a LOT of clusters from <code>hdbscan</code> - this makes sense, there is a lot going on in this corpus! But it might be nice to refine those clusters so that we can see which ones are related. We’ll get to that after we explore this great visualization.</p>
+<div id="prepare-top-words-cluster-documents" class="section level2" number="4.1">
+<h2><span class="header-section-number">4.1</span> Prepare top words, Cluster documents</h2>
+<p>Get top words for further visualization and pile all documents in a cluster into one giant document for the purposes of summarization.</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="clustering-hdbscan.html#cb7-1" aria-hidden="true" tabindex="-1"></a>top.words<span class="ot">=</span><span class="fu">list</span>()</span>
+<span id="cb7-2"><a href="clustering-hdbscan.html#cb7-2" aria-hidden="true" tabindex="-1"></a>cluster.docs <span class="ot">=</span> <span class="fu">vector</span>()</span>
+<span id="cb7-3"><a href="clustering-hdbscan.html#cb7-3" aria-hidden="true" tabindex="-1"></a>centroids <span class="ot">=</span> <span class="fu">matrix</span>(<span class="cn">NA</span>,k,<span class="dv">2</span>)</span>
+<span id="cb7-4"><a href="clustering-hdbscan.html#cb7-4" aria-hidden="true" tabindex="-1"></a>mem<span class="ot">=</span><span class="fu">matrix</span>(<span class="cn">NA</span>,<span class="at">nrow=</span>n,<span class="at">ncol=</span>k)</span>
+<span id="cb7-5"><a href="clustering-hdbscan.html#cb7-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-6"><a href="clustering-hdbscan.html#cb7-6" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span>(i <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span>k){</span>
+<span id="cb7-7"><a href="clustering-hdbscan.html#cb7-7" aria-hidden="true" tabindex="-1"></a>  mem[,i] <span class="ot">=</span> clus<span class="sc">$</span>cluster <span class="sc">==</span>i</span>
+<span id="cb7-8"><a href="clustering-hdbscan.html#cb7-8" aria-hidden="true" tabindex="-1"></a>  tdmi <span class="ot">=</span> tdm[,mem[,i]]</span>
+<span id="cb7-9"><a href="clustering-hdbscan.html#cb7-9" aria-hidden="true" tabindex="-1"></a>  rs <span class="ot">=</span> <span class="fu">row_sums</span>(tdmi)</span>
+<span id="cb7-10"><a href="clustering-hdbscan.html#cb7-10" aria-hidden="true" tabindex="-1"></a>  top.words[[i]] <span class="ot">=</span> <span class="fu">names</span>(rs[<span class="fu">order</span>(rs,<span class="at">decreasing=</span>T)])[<span class="dv">1</span><span class="sc">:</span><span class="dv">10</span>]</span>
+<span id="cb7-11"><a href="clustering-hdbscan.html#cb7-11" aria-hidden="true" tabindex="-1"></a>  cluster.docs[i] <span class="ot">=</span> <span class="fu">paste</span>(raw_text_subset[clus<span class="sc">$</span>cluster <span class="sc">==</span>i], <span class="at">sep=</span><span class="st">&#39;&#39;</span>, <span class="at">collapse=</span><span class="st">&#39; &#39;</span>)</span>
+<span id="cb7-12"><a href="clustering-hdbscan.html#cb7-12" aria-hidden="true" tabindex="-1"></a>  centroids[i,]<span class="ot">=</span><span class="fu">colMeans</span>(svd_ump<span class="sc">$</span>layout[clus<span class="sc">$</span>cluster <span class="sc">==</span>i,])</span>
+<span id="cb7-13"><a href="clustering-hdbscan.html#cb7-13" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb7-14"><a href="clustering-hdbscan.html#cb7-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-15"><a href="clustering-hdbscan.html#cb7-15" aria-hidden="true" tabindex="-1"></a>displayWords<span class="ot">=</span><span class="fu">vector</span>()</span>
+<span id="cb7-16"><a href="clustering-hdbscan.html#cb7-16" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span>(i <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span>k){displayWords[i] <span class="ot">=</span> <span class="fu">paste</span>(top.words[[i]][<span class="dv">1</span><span class="sc">:</span><span class="dv">7</span>] , <span class="at">sep=</span><span class="st">&#39; &#39;</span>, <span class="at">collapse=</span><span class="st">&#39;&lt;br&gt;&#39;</span>)}</span></code></pre></div>
+</div>
+</div>
+            </section>
+
+          </div>
+        </div>
+      </div>
+<a href="umap.html" class="navigation navigation-prev " aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
+<a href="the-grand-visualization.html" class="navigation navigation-next " aria-label="Next page"><i class="fa fa-angle-right"></i></a>
+    </div>
+  </div>
+<script src="libs/gitbook-2.6.7/js/app.min.js"></script>
+<script src="libs/gitbook-2.6.7/js/lunr.js"></script>
+<script src="libs/gitbook-2.6.7/js/clipboard.min.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-search.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-sharing.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-fontsettings.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-bookdown.js"></script>
+<script src="libs/gitbook-2.6.7/js/jquery.highlight.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-clipboard.js"></script>
+<script>
+gitbook.require(["gitbook"], function(gitbook) {
+gitbook.start({
+"sharing": {
+"github": false,
+"facebook": true,
+"twitter": true,
+"linkedin": false,
+"weibo": false,
+"instapaper": false,
+"vk": false,
+"whatsapp": false,
+"all": ["facebook", "twitter", "linkedin", "weibo", "instapaper"]
+},
+"fontsettings": {
+"theme": "white",
+"family": "sans",
+"size": 2
+},
+"edit": {
+"link": null,
+"text": null
+},
+"history": {
+"link": null,
+"text": null
+},
+"view": {
+"link": null,
+"text": null
+},
+"download": null,
+"toc": {
+"collapse": "section",
+"toc": null
+}
+});
+});
+</script>
+
+</body>
+
+</html>

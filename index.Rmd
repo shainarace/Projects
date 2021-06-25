@@ -6,9 +6,9 @@ site: bookdown::bookdown_site
 github-repo: shainarace/Reuters
 ---
 
-# Grand Visualization
+# Prepare Data
 
-```{r echo=F}
+```{r echo=F, message=F}
 # install.packages("tm.corpus.Reuters21578", repos = "http://datacube.wu.ac.at")
 # install.packages("SnowballC")
 # install.packages("textreg")
@@ -53,8 +53,6 @@ library(htmlwidgets)
 library(bookdown)
 ```
 
-## Prepare Data
-
 -1. Get datetimes from python script.
 0. Copy text of raw documents to separate vector for visualization/results.
 1. Make lower case, emove stop words + "Reuters", punctuation, and numbers; _No_ stemming was ultimately used.
@@ -62,7 +60,7 @@ library(bookdown)
 5. Remove documents left with fewer than 10 words remaining.
 6. Ready the datetime, topics, and heading information for visualization.
 
-```{r}
+```{r message=F}
 #setwd('/Users/shaina/Library/Mobile Documents/com~apple~CloudDocs/Datasets and Code/reuters21578/')
 # load('Reuters.RData')
 # # Step 0
@@ -120,10 +118,9 @@ library(bookdown)
 load('processedV1.RData')
 ```
 
-
 # Exploratory Analysis via SVD
 
-```{r}
+```{r message=F}
 # tfidf_tdm = weightTfIdf(tdm, normalize=T)
 # m =  Matrix::sparseMatrix(i=tfidf_tdm$i, 
 #                            j=tfidf_tdm$j, 
@@ -147,9 +144,11 @@ g2 = ggplot(data=u.df, aes(x=x, y=y)) +
 grid.arrange(g1,g2,ncol=1)
 ```                 
 
-# UMAP Projection of 150 Singular Vectors
+# UMAP
 
-```{r}
+We'll use the mathemagical [Uniform Manifold Approximation and Projection (UMAP)](https://umap-learn.readthedocs.io/en/latest/) algorithm to project the already dimension-reduced data (150 singular vectors) into 2-space.
+
+```{r message=F}
 # svd_ump = umap(svd$v)
 # save(svd_ump, file='svd_ump.RData')
 load('svd_ump.RData')
@@ -170,7 +169,7 @@ fig
 
 Outliers causing annoying viz issues requiring the zoom. We will routinely omit these outliers (after noting they make nice clusters of related documents) when creating the plot to avoid having to zoom on the main plot.
 
-```{r}
+```{r message=F}
 index_subset = abs(svd_ump$layout[,1]) <20 & abs(svd_ump$layout[,2]) <20
 data_subset = svd_ump$layout[index_subset,]
 raw_text_subset = raw_text[index_subset]
@@ -193,47 +192,30 @@ fig
 
 After omitting the outliers, we see a nice plot that looks like it has some nice cluster separation.
 
-# Use HDBSCAN to cluster UMAP projection
+# Clustering: HDBSCAN 
 
-Two options here - can cluster this UMAP projection or can opt to cluster some higher-dimensional projection (like the singular vectors themselves) and see how that looks in the UMAP Space. UMAP clustering seems to perform _really_ well, even better than singular vector input, so we stick with it. We define `n` as the number of documents and `k` as the number of clusters
+Two options here - can cluster this UMAP projection or can opt to cluster some higher-dimensional projection (like the singular vectors themselves) and see how that looks in the UMAP Space. UMAP clustering seems to perform _really_ well, even better than singular vector input, so we stick with it. We define `n` as the number of documents and `k` as the number of clusters.
 
-```{r}
+Hierarchical DBSCAN is a fast algorithm that adapts the ideas of single linkage clustering (minimal spanning trees) to [DBSCAN](https://en.wikipedia.org/wiki/DBSCAN) (density based spatial clustering of applications with noise) to create a hierarchical map of density based clusters. 
+
+```{r message=F}
 ### clus = hdbscan(svd$v[,1:25],10)
 ### save(clus,file='hdbscan_clusters10.RData')
 ### load('hdbscan_clusters10.RData')
 #clus = hdbscan(svd_ump$layout,5)
 # save(clus,file='alldocs_hdbscan_of_map5.RData')
 load('alldocs_hdbscan_of_map5.RData')
+n=length(clus$cluster)
 (k = length(clus$cluster_scores))
-(n=length(clus$cluster))
 ```
 
+We get a LOT of clusters from `hdbscan` - this makes sense, there is a lot going on in this corpus! But it might be nice to refine those clusters so that we can see which ones are related. We'll get to that after we explore this great visualization. 
 
-# The Grand Visualization
-[Full Page Rendering](https://shainarace.github.io/Reuters/All_clusters_noTopics_UMAPClus_wNoise.html)
-
-```{r}
-clusters = clus$cluster[index_subset]
-
-fig <- plot_ly(type = 'scatter', mode = 'markers')
-fig <- fig %>%
-  add_trace(
-    x = data_subset[,1],
-    y = data_subset[,2],
-    text = ~paste('Heading:', head_subset ,"$<br>Text: ", raw_text_subset ,"$<br>Cluster Number: ", clusters),
-    hoverinfo = 'text',
-    color = clusters,
-    showlegend = F
-  )
-fig
-#saveWidget(fig, "All_clusters_noTopics_UMAPClus_wNoise.html")
-```
-
-# Prepare top words, Cluster documents
+## Prepare top words, Cluster documents
 
 Get top words for further visualization and pile all documents in a cluster into one giant document for the purposes of summarization.
 
-```{r}
+```{r message=F}
 top.words=list()
 cluster.docs = vector()
 centroids = matrix(NA,k,2)
@@ -252,13 +234,38 @@ displayWords=vector()
 for(i in 1:k){displayWords[i] = paste(top.words[[i]][1:7] , sep=' ', collapse='<br>')}
 ```
 
-# Omit some noise points for more cluster clarity
+
+
+# The Grand Visualization
+
+[Full Page Rendering](https://shainarace.github.io/Reuters/All_clusters_noTopics_UMAPClus_wNoise.html)
+
+__Note: We don't have enough colors! The colors are recycled but hopefully will still help. Cluster numbers in tooltip for certainty__
+```{r message=F}
+clusters = factor(clus$cluster[index_subset])
+
+fig <- plot_ly(type = 'scatter', mode = 'markers')
+fig <- fig %>%
+  add_trace(
+    x = data_subset[,1],
+    y = data_subset[,2],
+    text = ~paste('Heading:', head_subset ,"$<br>Text: ", raw_text_subset ,"$<br>Cluster Number: ", clusters),
+    hoverinfo = 'text',
+    color = clusters,
+    showlegend = F
+  )
+fig
+#saveWidget(fig, "All_clusters_noTopics_UMAPClus_wNoise.html")
+```
+
+
+## Omit some noise points for more cluster clarity
 
 We _could_ reduce the noise on the plot by omitting some of the points with high outlier scores, but generally I hate doing this because it can be a good way to accidently lose something you didn't know you wanted. However, it could have it's advantages as a strategy and the `outlier_score` of `hdbscan()` is a nice threshold to play with for further analytical paths. 
 
 [Full Page Rendering](https://shainarace.github.io/Reuters/All_clusters_noTopics_UMAPClus.html)
 
-```{r}
+```{r message=F}
 index_subset = abs(svd_ump$layout[,1]) <20 & abs(svd_ump$layout[,2]) <20 & clus$outlier_scores<0.6
 data_subset = svd_ump$layout[index_subset,]
 raw_text_subset = raw_text[index_subset]
@@ -279,9 +286,10 @@ fig
 #saveWidget(fig, "All_clusters_noTopics_UMAPClus.html")
 
 ```
+
 # Cluster Refinement
 
-Not stoked that so many bigger clusters seem to get broken up even though they seem nicely separated on the UMAP projection. Would love to deal with the big center blob a bit better. Two ideas for potential refinement:
+Problem: Many medium-big clusters get broken up even though they seem nicely separated on the UMAP projection. Would love to deal with the big center blob a bit better. Two ideas for potential refinement:
 
 1. Run the clustering again on centroids of clusters
 2. Focus on the blob and see if treating it separately helps - potentially less information overall to squeeze into the viz, allowing for more separation - divide and conquer. 
@@ -290,7 +298,7 @@ The first idea is easier so we'll start there:
 
 ## Refinement Idea 1: Clustering the centroids
 
-```{r}
+```{r message=F}
 cen_clus = hdbscan(centroids, 3) # Down to 78 Clusters...Looks Pretty Good. 
 # Omit the 2 outside 
 
@@ -308,7 +316,7 @@ fig
 
 _Additional thought_ (not implemented) leave the noise points IN and cluster them with the centroids. This is a good idea because it allows points that were previously labeled as noise to potentially join a cluster of nearby centroids. 
 
-```{r}
+```{r message=F}
 
 remapClusters = function(cen_clus,clus){
   k = length(clus$cluster_scores)
@@ -322,11 +330,11 @@ remapClusters = function(cen_clus,clus){
   
 ```
 
-## Grand Visualization of Refined Clusters
+### Grand Visualization of Refined Clusters {-}
 
 [Full Page Rendering](https://shainarace.github.io/Reuters/All_centroid_refined_clusters.html)
 
-```{r}
+```{r message=F}
 
 newclusters = remapClusters(cen_clus, clus) 
 
@@ -355,7 +363,7 @@ Here, we divide the data according to UMAP and recompute the SVD of that subset.
 
 [Full Page Rendering](https://shainarace.github.io/Reuters/SubsettingUMAPforRepeatSVD.html)
 
-```{r}
+```{r message=F}
 # Take rectangular subset on the interval x=y=[-2,2]
 index_subset2=abs(svd_ump$layout[,1]) <2 & abs(svd_ump$layout[,2]) <2
 tdm_subset = tdm[,index_subset2]
