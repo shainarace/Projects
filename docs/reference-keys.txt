@@ -1,5 +1,6 @@
 prepare-data
-exploratory-analysis-via-svd
+exploratory-analysis
+term-frequencies
 umap
 clustering-hdbscan
 prepare-top-words-cluster-documents

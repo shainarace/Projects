@@ -8,7 +8,11 @@ github-repo: shainarace/Reuters
 
 # Prepare Data
 
-```{r echo=F, message=F}
+These 21,578 documents are readily available in an R document corpus in the package `tm.corpus.Reuters21578`. However, this corpus comes pre-loaded with many missing headings and _mostly_ missing dates, so we read the files line-by-line to extract the date, text (with heading), and the value of `lewissplit` in case we wanted to perform some predictive modeling. This ended up being really annoying as the result of __non-UTF-8 encoding on file 17__ - but once that was fixed, we got what we needed.
+
+Beautiful Soup was no help here, it made something more like Angry Soup. 
+
+```{r message=F, warning=F}
 # install.packages("tm.corpus.Reuters21578", repos = "http://datacube.wu.ac.at")
 # install.packages("SnowballC")
 # install.packages("textreg")
@@ -29,6 +33,8 @@ github-repo: shainarace/Reuters
 # install.packages('textrank')
 # install.packages('rvest')
 # install.packages('tidytext')
+# install.packages('tsne')
+
 ##################################################################
 library(textrank)
 library(rvest)
@@ -51,7 +57,84 @@ library(lubridate)
 library(rARPACK)
 library(htmlwidgets)
 library(bookdown)
+library(stringr)
+library(fs)
+library(tsne)
 ```
+
+```{r message=F, warning=F}
+#setwd('/Users/shaina/Library/Mobile Documents/com~apple~Clouddocs/final_data_plots/Datasets and Code/reuters21578/')
+
+# PATH = '/Users/shaina/Library/Mobile Documents/com~apple~Clouddocs/final_data_plots/Datasets and Code/reuters21578/Files/'
+# filenames=dir_ls(PATH)
+# datetime=vector()
+# text = vector()
+# lewissplit=vector()
+# 
+# 
+# for(file in filenames){
+#   con = file(file,"r", encoding = "UTF-8")
+#   line = readLines(con, encoding="UTF-8")
+#   line = paste(line, sep=' ', collapse = ' ')
+#   # String size fixed
+#   lewis_idx=str_locate_all(pattern='LEWISSPLIT=',line)
+#   date_idx=str_locate_all(pattern='<DATE>',line)
+#   for(i in 1:nrow(lewis_idx[[1]])){
+#     datetime[length(datetime)+1]=substr(line, date_idx[[1]][i,2]+1,date_idx[[1]][i,2]+20)
+#     lewissplit[length(lewissplit)+1]=substr(line, lewis_idx[[1]][i,2]+2,lewis_idx[[1]][i,2]+5)
+#   }
+#   # String size not fixed
+#   line = paste(line, sep=' ', collapse = ' ')
+#   line=gsub('</','<',line)
+#   text_idx=str_locate_all(pattern='<TEXT',line)
+#   for(i in seq(1,nrow(text_idx[[1]])-1,2)){
+#     text[length(text)+1]=substr(line, text_idx[[1]][i,2]+2,text_idx[[1]][i+1,1]-1)
+#   }
+#   close(con)
+# }
+# 
+# # Annoying that I end up with fewer documents than I should. Investigate that.
+# 
+# # Explore why I end up with fewer documents than I should by counting occurrences of <TEXT on each file: <aha> # Fixed UTF-8 encoding on file 17 and now it works.
+# date = as.POSIXct(datetime,format = '%d-%b-%Y %H:%M:%S')
+# datetime[which(is.na(date))]
+# datetime[which(is.na(date))] = c("5-APR-1987 01:53:30", "31-MAR-1987 05:12:1")
+# datetime = as.POSIXct(datetime,format = '%d-%b-%Y %H:%M:%S')
+# lewissplit[lewissplit=='TRAI']='train'
+# lewissplit[lewissplit=='TEST']='test'
+# 
+# ############################################################################
+# # Now I can pull out the heading...
+# ############################################################################
+# title_idx = str_locate_all(pattern='<TITLE>',text)
+# head=vector()
+# for(i in 1:(length(text))){
+#   if(nrow(title_idx[[i]])<2){
+#     head[i]=''
+#   }else{
+#       head[i]=substr(text[i], title_idx[[i]][1,2]+1,title_idx[[i]][2,1]-1)
+#     }
+# }
+# head=gsub('&lt;','<',head)
+# ############################################################################
+# # ...and the raw article text. 
+# ############################################################################
+# body_idx = str_locate_all(pattern='<BODY>',text)
+# body=vector()
+# for(i in 1:(length(text))){
+#   if(nrow(body_idx[[i]])<2){
+#     body[i]=text[i]
+#   }else{
+#       body[i]=substr(text[i], body_idx[[i]][1,2]+1,body_idx[[i]][2,1]-1)
+#     }
+# }
+# text=body
+# Reuters <- Corpus(VectorSource(text))
+#save(text,head,Reuters,lewissplit,datetime,file='RawDataRead.RData')
+load('docs/final_data_plots/RawDataRead.RData')
+```
+
+
 
 -1. Get datetimes from python script.
 0. Copy text of raw documents to separate vector for visualization/results.
@@ -60,76 +143,105 @@ library(bookdown)
 5. Remove documents left with fewer than 10 words remaining.
 6. Ready the datetime, topics, and heading information for visualization.
 
-```{r message=F}
-#setwd('/Users/shaina/Library/Mobile Documents/com~apple~CloudDocs/Datasets and Code/reuters21578/')
+
+```{r}
 # load('Reuters.RData')
 # # Step 0
 # # 1
 # ############################################################
-# R = Reuters21578
+# R = Reuters
 # R = tm_map(R,content_transformer(tolower))
-# ############################################################
-# # 2
-# ############################################################
+# # ############################################################
+# # # 2
+# # ############################################################
 # R = tm_map(R,removeWords,stopwords("en"))
 # R = tm_map(R,removePunctuation)
 # R = tm_map(R,removeNumbers)
-# #R = tm_map(R,stemDocument)
-# R = tm_map(R,removeWords, c('reuters'))
-# ############################################################
-# # 3
-# ############################################################
+# R = tm_map(R,stemDocument)
+# R = tm_map(R,removeWords, c('reuter', 'dlrs', 'mln', 'said','will', 'year', 'compani','pct','corp' ))
+# # ############################################################
+# # # 3
+# # ############################################################
 # tdm = TermDocumentMatrix(R)
 # binary = weightBin(tdm)
-# ############################################################
-# # 4
-# ############################################################
+# # ############################################################
+# # # 4
+# # ############################################################
 # keep_terms = row_sums(binary)>=5
 # tdm = tdm[keep_terms,]
-# ############################################################
-# # 5
-# ############################################################
+# # ############################################################
+# # # 5
+# # ############################################################
 # keep_docs = col_sums(tdm)>10
 # R = R[keep_docs]
 # tdm = tdm[,keep_docs ]
 # dim(tdm)
 # length(R)
-# ############################################################
-# datetime = read.csv('datetimes.csv')
-# datetime=datetime[keep_docs,]
-# head = unlist(meta(R,"heading"))
-# ############################################################
-# raw_data = unlist(content(Reuters21578[keep_docs]))
-# raw_text=raw_data[names(raw_data)=='content']
-# raw_text = str_squish(raw_text)
-# head=raw_data[names(raw_data)=='meta.heading']
-# head = str_squish(head)
-# lewissplit = raw_data[names(raw_data)=='meta.lewissplit']
-# ############################################################
+# datetime = datetime[keep_docs]
+# lewissplit=lewissplit[keep_docs]
+# head=head[keep_docs]
+# raw_text=text[keep_docs]
+# #############################################################
 # # add breaks for text wrapping
-# ############################################################
-# 
+# #############################################################
 # raw_text = gsub("(.{60,}?)\\s", "\\1<br>", raw_text)
-
 ############################################################
 # Save data to avoid repeat processing
 ############################################################
-# save(raw_text,head,lewissplit,tdm,R,datetime, file='processedV1.RData')
-load('processedV1.RData')
+#save(raw_text,head,lewissplit,tdm,R,datetime, file='processedV2.RData')
+load('docs/final_data_plots/processedV2.RData')
 ```
 
-# Exploratory Analysis via SVD
+# Exploratory Analysis 
 
-```{r message=F}
+## Term Frequencies
+
+This initial exploration of term frequencies allowed us to find some extraordinarily common words for this corpus that were added to the stop list. Not _all_ common words were added to the stop list, however. Some common words may still have found relevance in determining certain groups of documents (an example would be the abbreviation 'vs' which indicates a comparison, most notably from an earnings report.)
+
+__Documents per word__
+
+```{r message=F, warning=F}
+bin = weightBin(tdm)
+df=data.frame(docFreqs = row_sums(bin))
+g1 = ggplot(df,aes(x=docFreqs)) + 
+    geom_histogram(aes(y=..density..), alpha=0.5) + geom_density( alpha = 0.2) +
+    labs(x = "Number of Documents in which \n a Word Appears")  
+df=data.frame(docFreqs=df$docFreqs[df$docFreqs<100] )
+g2 =  ggplot(df,aes(x=docFreqs)) + 
+    geom_histogram(aes(y=..density..), alpha=0.5) + geom_density( alpha = 0.2) +
+    labs(x = "Number of Documents in which \n a Word Appears", y='Frequency',
+    title='Same Distribution Cut at x=100')
+grid.arrange(g1,g2,ncol=2)
+```
+__TF-IDF per word__
+
+```{r message=F, warning=F}
+tfi = weightTfIdf(tdm)
+df = data.frame(termFreqs = row_sums(tfi))
+
+g1 = ggplot(df,aes(x=termFreqs)) + 
+    geom_histogram(aes(y=..density..), alpha=0.5) + geom_density( alpha = 0.2) +
+    labs(x = "Sum of TF-IDF Weights \n for each words")  
+df=data.frame(termFreqs=df$termFreqs[df$termFreqs<100] )
+g2 =  ggplot(df,aes(x=termFreqs)) + 
+    geom_histogram(aes(y=..density..), alpha=0.5) + geom_density( alpha = 0.2) +
+    labs(x = "Sum of TF-IDF Weights \n for each word", y='Frequency',
+    title='Same Distribution Cut at x=100')
+grid.arrange(g1,g2,ncol=2)
+
+```
+## via SVD
+
+```{r message=F, warning=F}
 # tfidf_tdm = weightTfIdf(tdm, normalize=T)
-# m =  Matrix::sparseMatrix(i=tfidf_tdm$i, 
-#                            j=tfidf_tdm$j, 
-#                            x=tfidf_tdm$v, 
+# m =  Matrix::sparseMatrix(i=tfidf_tdm$i,
+#                            j=tfidf_tdm$j,
+#                            x=tfidf_tdm$v,
 #                            dims=c(tfidf_tdm$nrow, tfidf_tdm$ncol),
 #                            dimnames = tfidf_tdm$dimnames)
-#svd = irlba(m, 150)
-#save(svd,file='svd.RData')
-load('svd.RData')
+# svd = irlba(m, 150)
+# save(svd,file='svd.RData')
+load('docs/final_data_plots/svd.RData')
 df = data.frame(x=1:150,d=svd$d)
 g1 = ggplot(data=df, aes(x=x, y=d, group=1)) +
   geom_line(color="red")+labs(y='Singular Values',x='index', 
@@ -141,17 +253,32 @@ u.df = data.frame(x=svd$v[,1], y=svd$v[,2])
 g2 = ggplot(data=u.df, aes(x=x, y=y)) +
   geom_point()+labs(y='Second Singular Component',x='First Singular Component',
                     title='SVD Projection of Reuters tf-idf Term-Document Matrix') 
-grid.arrange(g1,g2,ncol=1)
+g1
+
+fig <- plot_ly(type = 'scatter', mode = 'markers')
+fig <- fig %>%
+  add_trace(
+    x = svd$v[,1],
+    y = svd$v[,2],
+    text = ~paste('heading:', head ,"$<br>text: ", raw_text  ),
+    hoverinfo = 'text',
+    marker = list(color='green', opacity=0.6),
+    showlegend = F
+  )
+
+fig
 ```                 
+
+Our [initial Creation of this SVD Projection](https://shainarace.github.io/docs/final_data_plots/SVD_shows_briefs_vs_articles.html) allowed us to see that we had an issue with _briefs_ vs. _articles_ in this data. 
 
 # UMAP
 
-We'll use the mathemagical [Uniform Manifold Approximation and Projection (UMAP)](https://umap-learn.readthedocs.io/en/latest/) algorithm to project the already dimension-reduced data (150 singular vectors) into 2-space.
+We'll use the mathemagical [Uniform Manifold Approximation and Projection (UMAP)](https://umap-learn.readthedocs.io/en/latest/) algorithm to project the already dimension-reduced data (150 singular vectors) into 2-space. UMAP is a dimension reduction technique that builds on the notion neighbor graphs with ideas from topology. It is similar to t-SNE in its approach, but the fundamentals are based on firmer (and more complicated) mathematical theory (manifolds/topology).  
 
-```{r message=F}
+```{r message=F, warning=F}
 # svd_ump = umap(svd$v)
 # save(svd_ump, file='svd_ump.RData')
-load('svd_ump.RData')
+load('docs/final_data_plots/svd_ump.RData')
 
 fig <- plot_ly(type = 'scatter', mode = 'markers')
 fig <- fig %>%
@@ -160,7 +287,7 @@ fig <- fig %>%
     y = svd_ump$layout[,2],
     text = ~paste('heading:', head ,"$<br>text: ", raw_text  ),
     hoverinfo = 'text',
-    marker = list(color='green'),
+    marker = list(color='green', opacity=0.6),
     showlegend = F
   )
 
@@ -169,7 +296,7 @@ fig
 
 Outliers causing annoying viz issues requiring the zoom. We will routinely omit these outliers (after noting they make nice clusters of related documents) when creating the plot to avoid having to zoom on the main plot.
 
-```{r message=F}
+```{r message=F, warning=F}
 index_subset = abs(svd_ump$layout[,1]) <20 & abs(svd_ump$layout[,2]) <20
 data_subset = svd_ump$layout[index_subset,]
 raw_text_subset = raw_text[index_subset]
@@ -190,7 +317,7 @@ fig
 
 ```
 
-After omitting the outliers, we see a nice plot that looks like it has some nice cluster separation.
+After omitting the straggler points on the outskirts, we see a nice plot that looks like it has some nice cluster separation.
 
 # Clustering: HDBSCAN 
 
@@ -198,13 +325,13 @@ Two options here - can cluster this UMAP projection or can opt to cluster some h
 
 Hierarchical DBSCAN is a fast algorithm that adapts the ideas of single linkage clustering (minimal spanning trees) to [DBSCAN](https://en.wikipedia.org/wiki/DBSCAN) (density based spatial clustering of applications with noise) to create a hierarchical map of density based clusters. 
 
-```{r message=F}
+```{r message=F, warning=F}
 ### clus = hdbscan(svd$v[,1:25],10)
 ### save(clus,file='hdbscan_clusters10.RData')
 ### load('hdbscan_clusters10.RData')
 #clus = hdbscan(svd_ump$layout,5)
 # save(clus,file='alldocs_hdbscan_of_map5.RData')
-load('alldocs_hdbscan_of_map5.RData')
+load('docs/final_data_plots/alldocs_hdbscan_of_map5.RData')
 n=length(clus$cluster)
 (k = length(clus$cluster_scores))
 ```
@@ -215,7 +342,7 @@ We get a LOT of clusters from `hdbscan` - this makes sense, there is a lot going
 
 Get top words for further visualization and pile all documents in a cluster into one giant document for the purposes of summarization.
 
-```{r message=F}
+```{r message=F, warning=F}
 top.words=list()
 cluster.docs = vector()
 centroids = matrix(NA,k,2)
@@ -234,14 +361,13 @@ displayWords=vector()
 for(i in 1:k){displayWords[i] = paste(top.words[[i]][1:7] , sep=' ', collapse='<br>')}
 ```
 
-
-
 # The Grand Visualization
 
-[Full Page Rendering](https://shainarace.github.io/Reuters/All_clusters_noTopics_UMAPClus_wNoise.html)
+[Full Page Rendering](https://shainarace.github.io/docs/final_data_plots/All_clusters_noTopics_UMAPClus_wNoise.html)
 
 __Note: We don't have enough colors! The colors are recycled but hopefully will still help. Cluster numbers in tooltip for certainty__
-```{r message=F}
+
+```{r message=F, warning=F}
 clusters = factor(clus$cluster[index_subset])
 
 fig <- plot_ly(type = 'scatter', mode = 'markers')
@@ -251,7 +377,8 @@ fig <- fig %>%
     y = data_subset[,2],
     text = ~paste('Heading:', head_subset ,"$<br>Text: ", raw_text_subset ,"$<br>Cluster Number: ", clusters),
     hoverinfo = 'text',
-    color = clusters,
+    color=clusters,
+    marker = list( opacity=0.6),
     showlegend = F
   )
 fig
@@ -263,9 +390,9 @@ fig
 
 We _could_ reduce the noise on the plot by omitting some of the points with high outlier scores, but generally I hate doing this because it can be a good way to accidently lose something you didn't know you wanted. However, it could have it's advantages as a strategy and the `outlier_score` of `hdbscan()` is a nice threshold to play with for further analytical paths. 
 
-[Full Page Rendering](https://shainarace.github.io/Reuters/All_clusters_noTopics_UMAPClus.html)
+[Full Page Rendering](https://shainarace.github.io/docs/final_data_plots/All_clusters_noTopics_UMAPClus.html)
 
-```{r message=F}
+```{r message=F, warning=F, warning=F}
 index_subset = abs(svd_ump$layout[,1]) <20 & abs(svd_ump$layout[,2]) <20 & clus$outlier_scores<0.6
 data_subset = svd_ump$layout[index_subset,]
 raw_text_subset = raw_text[index_subset]
@@ -279,6 +406,7 @@ fig <- fig %>%
     y = data_subset[,2],
     text = ~paste('Heading:', head_subset ,"$<br>Text: ", raw_text_subset ,"$<br>Cluster Number: ", clusters),
     hoverinfo = 'text',
+    markers = list(opacity=0.6),
     color = clusters,
     showlegend = F
   )
@@ -298,7 +426,7 @@ The first idea is easier so we'll start there:
 
 ## Refinement Idea 1: Clustering the centroids
 
-```{r message=F}
+```{r message=F, warning=F}
 cen_clus = hdbscan(centroids, 3) # Down to 78 Clusters...Looks Pretty Good. 
 # Omit the 2 outside 
 
@@ -307,6 +435,7 @@ fig <- plot_ly(type = 'scatter', mode = 'markers')%>%
             y = centroids[,2], 
             text = ~paste('Key Words:', displayWords,"$<br>Cluster Number: ", cen_clus$cluster ), 
             color=factor(cen_clus$cluster),
+            marker=list( opacity=0.6),
             showlegend = FALSE)
 fig
 
@@ -316,7 +445,7 @@ fig
 
 _Additional thought_ (not implemented) leave the noise points IN and cluster them with the centroids. This is a good idea because it allows points that were previously labeled as noise to potentially join a cluster of nearby centroids. 
 
-```{r message=F}
+```{r message=F, warning=F}
 
 remapClusters = function(cen_clus,clus){
   k = length(clus$cluster_scores)
@@ -332,9 +461,9 @@ remapClusters = function(cen_clus,clus){
 
 ### Grand Visualization of Refined Clusters {-}
 
-[Full Page Rendering](https://shainarace.github.io/Reuters/All_centroid_refined_clusters.html)
+[Full Page Rendering](https://shainarace.github.io/docs/final_data_plots/All_centroid_refined_clusters.html)
 
-```{r message=F}
+```{r message=F, warning=F}
 
 newclusters = remapClusters(cen_clus, clus) 
 
@@ -348,6 +477,7 @@ fig <- fig %>%
     text = ~paste('Heading:', head_subset ,"$<br>Text: ", raw_text_subset ,"$<br>Cluster Number: ", clusters),
     hoverinfo = 'text',
     color = factor(newclusters),
+    marker=list(opacity=0.6),
     showlegend = F
   )
 fig
@@ -361,9 +491,9 @@ Onto the next thought for refinement: divide and conquer.
 
 Here, we divide the data according to UMAP and recompute the SVD of that subset. We see better cluster separation than we did in the corresponding rectangle on our original "Grand Viz", which suggests this might be a viable line of attack. 
 
-[Full Page Rendering](https://shainarace.github.io/Reuters/SubsettingUMAPforRepeatSVD.html)
+[Full Page Rendering](https://shainarace.github.io/docs/final_data_plots/SubsettingUMAPforRepeatSVD.html)
 
-```{r message=F}
+```{r message=F, warning=F}
 # Take rectangular subset on the interval x=y=[-2,2]
 index_subset2=abs(svd_ump$layout[,1]) <2 & abs(svd_ump$layout[,2]) <2
 tdm_subset = tdm[,index_subset2]
