@@ -164,7 +164,9 @@ load('docs/final_data_plots/RawDataRead.RData')
 load('docs/final_data_plots/processedV2.RData')
 
 
-tfidf_tdm = weightTfIdf(tdm, normalize=T)
+tfidf_tdm = weightTfIdf(tdm, normalize=F)
+tfidf_tdm = apply(tfidf_tdm, 2, function(x){x/c(sqrt(t(x)%*%x))})
+tfidf_tdm <- as(tfidf_tdm, "sparseMatrix") 
 m =  Matrix::sparseMatrix(i=tfidf_tdm$i,
                           j=tfidf_tdm$j,
                           x=tfidf_tdm$v,
@@ -191,7 +193,7 @@ fig <- fig %>%
   add_trace(
     x = svd$v[,1],
     y = svd$v[,2],
-    text = ~paste('heading:', head ,"$<br>text: ", raw_text  ),
+    text = ~paste('heading:', head ,"<br>text: ", raw_text  ),
     hoverinfo = 'text',
     marker = list(color='green', opacity=0.6),
     showlegend = F
@@ -206,9 +208,9 @@ save(svd_ump, file='docs/final_data_plots/svd_ump.RData')
 fig <- plot_ly(type = 'scatter', mode = 'markers')
 fig <- fig %>%
   add_trace(
-    x = svd_ump$layout[,1],
-    y = svd_ump$layout[,2],
-    text = ~paste('heading:', head ,"$<br>text: ", raw_text  ),
+    x = svd_ump[,1],
+    y = svd_ump[,2],
+    text = ~paste('heading:', head ,"<br>text: ", raw_text  ),
     hoverinfo = 'text',
     marker = list(color='green', opacity=0.6),
     showlegend = F
@@ -226,7 +228,7 @@ fig <- fig %>%
   add_trace(
     x = data_subset[,1],
     y = data_subset[,2],
-    text = ~paste('heading:', head_subset ,"$<br>text: ", raw_text_subset ),
+    text = ~paste('heading:', head_subset ,"<br>text: ", raw_text_subset ),
     hoverinfo = 'text',
     marker = list(color='green'),
     showlegend = F

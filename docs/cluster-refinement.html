@@ -189,9 +189,10 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 1. Many medium-big clusters get broken up even though they seem nicely separated on the UMAP projection.<br />
 2. The big center blob is begging to be dealt with a bit better. </p>
 <p>Three ideas for potential refinement:<br />
-1. Run the clustering again on centroids of clusters
-2. Focus on the blob and see if treating it separately helps - potentially less information overall to squeeze into the viz, allowing for more separation - divide and conquer.
-3. <strong>Take all the existing clusters as single documents (i.e. paste all documents in a cluster together into single document for each cluster) – repeat this process.</strong> I think this is a nice idea but I don’t believe I’ll have time to play with it.</p>
+1. Run the clustering again on centroids of clusters<br />
+2. Focus on the blob and see if treating it separately helps - potentially less information overall to squeeze into the viz, allowing for more separation - divide and conquer.<br />
+3. <strong>Take all the existing clusters as single documents (i.e. paste all documents in a cluster together into single document for each cluster) – repeat this process.</strong> I think this is a nice idea but I don’t believe I’ll have time to play with it.<br />
+</p>
 <p>The first idea is easier so we’ll start there:</p>
 <div id="refinement-idea-1-clustering-the-centroids" class="section level2" number="6.1">
 <h2><span class="header-section-number">6.1</span> Refinement Idea 1: Clustering the centroids</h2>
@@ -207,7 +208,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <span id="cb15-10"><a href="cluster-refinement.html#cb15-10" aria-hidden="true" tabindex="-1"></a>            <span class="at">marker=</span><span class="fu">list</span>( <span class="at">opacity=</span><span class="fl">0.6</span>),</span>
 <span id="cb15-11"><a href="cluster-refinement.html#cb15-11" aria-hidden="true" tabindex="-1"></a>            <span class="at">showlegend =</span> <span class="cn">FALSE</span>)</span>
 <span id="cb15-12"><a href="cluster-refinement.html#cb15-12" aria-hidden="true" tabindex="-1"></a><span class="co">#saveWidget(fig, &quot;docs/Centroid_Clus.html&quot;)</span></span></code></pre></div>
-<p><a href="https://shainarace.github.io/docs/Centroid_Clus.html">Full Page Visualization</a></p>
+<p><a href="https://shainarace.github.io/Reuters/Centroid_Clus.html">Full Page Visualization</a></p>
 <p>Now we just need a function that maps the new centroid clustering back to the original points. Essentially one line of code in R, thanks to subsetting functionality (final line of function <code>remapClusters</code> below) but with the minor problem that noise points create an extra cluster. We simply add the noise cluster to the vector as cluster number <code>k+1</code>, and give it a value of <code>0</code> similar to the noise points. This creates some real problems with noise points.</p>
 <p><em>Additional thought</em> (not implemented) leave the noise points IN and cluster them with the centroids. This is a good idea because it allows points that were previously labeled as noise to potentially join a cluster of nearby centroids.</p>
 <div class="sourceCode" id="cb16"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb16-1"><a href="cluster-refinement.html#cb16-1" aria-hidden="true" tabindex="-1"></a>remapClusters <span class="ot">=</span> <span class="cf">function</span>(cen_clus,clus){</span>
@@ -237,7 +238,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <span id="cb17-14"><a href="cluster-refinement.html#cb17-14" aria-hidden="true" tabindex="-1"></a>  )</span>
 <span id="cb17-15"><a href="cluster-refinement.html#cb17-15" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb17-16"><a href="cluster-refinement.html#cb17-16" aria-hidden="true" tabindex="-1"></a><span class="co">#saveWidget(fig, &quot;docs/All_centroid_refined_clusters.html&quot;)</span></span></code></pre></div>
-<p><a href="https://shainarace.github.io/docs/All_centroid_refined_clusters.html">Full Page Visualization</a></p>
+<p><a href="https://shainarace.github.io/Reuters/All_centroid_refined_clusters.html">Full Page Visualization</a></p>
 <p>Onto the next thought for refinement: divide and conquer.</p>
 </div>
 </div>
@@ -273,7 +274,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <span id="cb18-27"><a href="cluster-refinement.html#cb18-27" aria-hidden="true" tabindex="-1"></a>  )</span>
 <span id="cb18-28"><a href="cluster-refinement.html#cb18-28" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb18-29"><a href="cluster-refinement.html#cb18-29" aria-hidden="true" tabindex="-1"></a><span class="fu">saveWidget</span>(fig2, <span class="st">&#39;docs/SubsettingUMAPforRepeatSVD.html&#39;</span>)</span></code></pre></div>
-<p><a href="https://shainarace.github.io/docs/SubsettingUMAPforRepeatSVD.html">Full Page Visualization</a></p>
+<p><a href="https://shainarace.github.io/Reuters/SubsettingUMAPforRepeatSVD.html">Full Page Visualization</a></p>
 
 </div>
 </div>

@@ -283,7 +283,7 @@ g1
 
 ### 2-D Projection {-}
 
-Our [initial Creation of this SVD Projection](https://shainarace.github.io/docs/SVD_shows_briefs_vs_articles.html) allowed us to see that we had an issue with _briefs_ vs. _articles_ in this data, something that may have caused noise in subsequent analysis had we not been careful about the exploratory phase. 
+Our [initial Creation of this SVD Projection](https://shainarace.github.io/Reuters/SVD_shows_briefs_vs_articles.html) allowed us to see that we had an issue with _briefs_ vs. _articles_ in this data, something that may have caused noise in subsequent analysis had we not been careful about the exploratory phase. 
 
 ```{r,eval=F}
 fig <- plot_ly(type = 'scatter', mode = 'markers')
@@ -301,7 +301,7 @@ fig <- fig %>%
 ```     
 
 
-[Full Page Visualization](https://shainarace.github.io/docs/svd_projection.html)
+[Full Page Visualization](https://shainarace.github.io/Reuters/svd_projection.html)
 
 # UMAP
 
@@ -336,7 +336,7 @@ fig <- fig %>%
 ```
 
 
-[Full Page Visualization](https://shainarace.github.io/docs/UMAP_noClusters.html)
+[Full Page Visualization](https://shainarace.github.io/Reuters/UMAP_noClusters.html)
 
 
 # Clustering: HDBSCAN 
@@ -412,7 +412,7 @@ fig <- fig %>%
 #saveWidget(fig, "docs/All_clusters_noTopics_UMAPClus_wNoise.html")
 ```
 
-[Full Page Visualization](https://shainarace.github.io/docs/All_clusters_noTopics_UMAPClus_wNoise.html)
+[Full Page Visualization](https://shainarace.github.io/Reuters/All_clusters_noTopics_UMAPClus_wNoise.html)
 
 
 ## Omit some noise points for more cluster clarity
@@ -442,7 +442,7 @@ fig <- fig %>%
 
 ```
 
-[Full Page Visualization](https://shainarace.github.io/docs/All_clusters_noTopics_UMAPClus.html)
+[Full Page Visualization](https://shainarace.github.io/Reuters/All_clusters_noTopics_UMAPClus.html)
 
 
 # Cluster Refinement
@@ -452,9 +452,9 @@ Problems with our initial clustering: \
 2. The big center blob is begging to be dealt with a bit better.\ 
 
 Three ideas for potential refinement:\
-1. Run the clustering again on centroids of clusters
-2. Focus on the blob and see if treating it separately helps - potentially less information overall to squeeze into the viz, allowing for more separation - divide and conquer. 
-3. __Take all the existing clusters as single documents (i.e. paste all documents in a cluster together into single document for each cluster) -- repeat this process.__ I think this is a nice idea but I don't believe I'll have time to play with it. 
+1. Run the clustering again on centroids of clusters\
+2. Focus on the blob and see if treating it separately helps - potentially less information overall to squeeze into the viz, allowing for more separation - divide and conquer. \
+3. __Take all the existing clusters as single documents (i.e. paste all documents in a cluster together into single document for each cluster) -- repeat this process.__ I think this is a nice idea but I don't believe I'll have time to play with it. \
 
 The first idea is easier so we'll start there:
 
@@ -477,7 +477,7 @@ fig <- plot_ly(type = 'scatter', mode = 'markers')%>%
 
 ```
 
-[Full Page Visualization](https://shainarace.github.io/docs/Centroid_Clus.html)
+[Full Page Visualization](https://shainarace.github.io/Reuters/Centroid_Clus.html)
 
  Now we just need a function that maps the new centroid clustering back to the original points. Essentially one line of code in R, thanks to subsetting functionality (final line of function `remapClusters` below) but with the minor problem that noise points create an extra cluster. We simply add the noise cluster to the vector as cluster number `k+1`, and give it a value of `0` similar to the noise points. This creates some real problems with noise points. 
 
@@ -521,7 +521,7 @@ fig <- fig %>%
 
 ```
 
-[Full Page Visualization](https://shainarace.github.io/docs/All_centroid_refined_clusters.html)
+[Full Page Visualization](https://shainarace.github.io/Reuters/All_centroid_refined_clusters.html)
 
 
 Onto the next thought for refinement: divide and conquer.
@@ -566,4 +566,4 @@ saveWidget(fig2, 'docs/SubsettingUMAPforRepeatSVD.html')
 ```
 
 
-[Full Page Visualization](https://shainarace.github.io/docs/SubsettingUMAPforRepeatSVD.html)
+[Full Page Visualization](https://shainarace.github.io/Reuters/SubsettingUMAPforRepeatSVD.html)
