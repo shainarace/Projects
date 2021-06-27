@@ -50,13 +50,6 @@
 
 
 
-<script src="libs/htmlwidgets-1.5.3/htmlwidgets.js"></script>
-<script src="libs/plotly-binding-4.9.4.1/plotly.js"></script>
-<script src="libs/typedarray-0.1/typedarray.min.js"></script>
-<link href="libs/crosstalk-1.1.0.1/css/crosstalk.css" rel="stylesheet" />
-<script src="libs/crosstalk-1.1.0.1/js/crosstalk.min.js"></script>
-<link href="libs/plotly-htmlwidgets-css-1.57.1/plotly-htmlwidgets.css" rel="stylesheet" />
-<script src="libs/plotly-main-1.57.1/plotly-latest.min.js"></script>
 
 
 <style type="text/css">
@@ -142,7 +135,17 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <li class="chapter" data-level="1" data-path="index.html"><a href="index.html"><i class="fa fa-check"></i><b>1</b> Prepare Data</a></li>
 <li class="chapter" data-level="2" data-path="exploratory-analysis.html"><a href="exploratory-analysis.html"><i class="fa fa-check"></i><b>2</b> Exploratory Analysis</a>
 <ul>
-<li class="chapter" data-level="2.1" data-path="exploratory-analysis.html"><a href="exploratory-analysis.html#term-frequencies"><i class="fa fa-check"></i><b>2.1</b> Term Frequencies</a></li>
+<li class="chapter" data-level="2.1" data-path="exploratory-analysis.html"><a href="exploratory-analysis.html#term-frequencies"><i class="fa fa-check"></i><b>2.1</b> Term Frequencies</a>
+<ul>
+<li class="chapter" data-level="" data-path="exploratory-analysis.html"><a href="exploratory-analysis.html#documents-per-word"><i class="fa fa-check"></i>Documents per word</a></li>
+<li class="chapter" data-level="" data-path="exploratory-analysis.html"><a href="exploratory-analysis.html#words-per-doc"><i class="fa fa-check"></i>Words per doc</a></li>
+<li class="chapter" data-level="" data-path="exploratory-analysis.html"><a href="exploratory-analysis.html#tf-idf-per-word"><i class="fa fa-check"></i>TF-IDF per word</a></li>
+</ul></li>
+<li class="chapter" data-level="2.2" data-path="exploratory-analysis.html"><a href="exploratory-analysis.html#via-svd"><i class="fa fa-check"></i><b>2.2</b> via SVD</a>
+<ul>
+<li class="chapter" data-level="" data-path="exploratory-analysis.html"><a href="exploratory-analysis.html#screeplot"><i class="fa fa-check"></i>Screeplot</a></li>
+<li class="chapter" data-level="" data-path="exploratory-analysis.html"><a href="exploratory-analysis.html#d-projection"><i class="fa fa-check"></i>2-D Projection</a></li>
+</ul></li>
 </ul></li>
 <li class="chapter" data-level="3" data-path="umap.html"><a href="umap.html"><i class="fa fa-check"></i><b>3</b> UMAP</a></li>
 <li class="chapter" data-level="4" data-path="clustering-hdbscan.html"><a href="clustering-hdbscan.html"><i class="fa fa-check"></i><b>4</b> Clustering: HDBSCAN</a>
@@ -159,7 +162,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <ul>
 <li class="chapter" data-level="" data-path="cluster-refinement.html"><a href="cluster-refinement.html#grand-visualization-of-refined-clusters"><i class="fa fa-check"></i>Grand Visualization of Refined Clusters</a></li>
 </ul></li>
-<li class="chapter" data-level="6.2" data-path="cluster-refinement.html"><a href="cluster-refinement.html#refinement-idea-1-divide-and-conquer"><i class="fa fa-check"></i><b>6.2</b> Refinement Idea 1: Divide and Conquer</a></li>
+<li class="chapter" data-level="6.2" data-path="cluster-refinement.html"><a href="cluster-refinement.html#refinement-idea-2-divide-and-conquer"><i class="fa fa-check"></i><b>6.2</b> Refinement Idea 2: Divide and Conquer</a></li>
 </ul></li>
 <li class="divider"></li>
 <li><a href="https://github.com/rstudio/bookdown" target="blank">Published with bookdown</a></li>
@@ -186,8 +189,16 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 </div>
 <div id="prepare-data" class="section level1" number="1">
 <h1><span class="header-section-number">1</span> Prepare Data</h1>
+<p>Key Takeaways:</p>
+<ol style="list-style-type: decimal">
+<li>File <code>reut2-017.sgm</code> is not UTF-8 and needs to be saved as UTF-8 for life to be easy.</li>
+<li>This legacy <code>.sgm</code> file extension which is essentially poorly-formed .xml picked fights with every parser that it encountered, even Beautiful Soup.</li>
+<li>Reading the corpus and parsing the tags manually turned out to be the most efficient solution.</li>
+<li>Two of the <DATE> fields (out of 21,578) required re-formatting: <code>5-APR-1987 01:53:30</code> and <code>31-MAR-1987 605:12:1</code>.</li>
+</ol>
+<hr />
 <p>These 21,578 documents are readily available in an R document corpus in the package <code>tm.corpus.Reuters21578</code>. However, this corpus comes pre-loaded with many missing headings and <em>mostly</em> missing dates, so we read the files line-by-line to extract the date, text (with heading), and the value of <code>lewissplit</code> in case we wanted to perform some predictive modeling. This ended up being really annoying as the result of <strong>non-UTF-8 encoding on file 17</strong> - but once that was fixed, we got what we needed.</p>
-<p>Beautiful Soup was no help here, it made something more like Angry Soup.</p>
+<p>Beautiful Soup was no help here.</p>
 <div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="index.html#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co"># install.packages(&quot;tm.corpus.Reuters21578&quot;, repos = &quot;http://datacube.wu.ac.at&quot;)</span></span>
 <span id="cb1-2"><a href="index.html#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="co"># install.packages(&quot;SnowballC&quot;)</span></span>
 <span id="cb1-3"><a href="index.html#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="co"># install.packages(&quot;textreg&quot;)</span></span>
@@ -210,7 +221,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <span id="cb1-20"><a href="index.html#cb1-20" aria-hidden="true" tabindex="-1"></a><span class="co"># install.packages(&#39;tidytext&#39;)</span></span>
 <span id="cb1-21"><a href="index.html#cb1-21" aria-hidden="true" tabindex="-1"></a><span class="co"># install.packages(&#39;tsne&#39;)</span></span>
 <span id="cb1-22"><a href="index.html#cb1-22" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-23"><a href="index.html#cb1-23" aria-hidden="true" tabindex="-1"></a><span class="do">##################################################################</span></span>
+<span id="cb1-23"><a href="index.html#cb1-23" aria-hidden="true" tabindex="-1"></a><span class="co"># ##################################################################</span></span>
 <span id="cb1-24"><a href="index.html#cb1-24" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(textrank)</span>
 <span id="cb1-25"><a href="index.html#cb1-25" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(rvest)</span>
 <span id="cb1-26"><a href="index.html#cb1-26" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidytext)</span>
@@ -302,59 +313,56 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <span id="cb2-65"><a href="index.html#cb2-65" aria-hidden="true" tabindex="-1"></a><span class="co"># }</span></span>
 <span id="cb2-66"><a href="index.html#cb2-66" aria-hidden="true" tabindex="-1"></a><span class="co"># text=body</span></span>
 <span id="cb2-67"><a href="index.html#cb2-67" aria-hidden="true" tabindex="-1"></a><span class="co"># Reuters &lt;- Corpus(VectorSource(text))</span></span>
-<span id="cb2-68"><a href="index.html#cb2-68" aria-hidden="true" tabindex="-1"></a><span class="co">#save(text,head,Reuters,lewissplit,datetime,file=&#39;RawDataRead.RData&#39;)</span></span>
-<span id="cb2-69"><a href="index.html#cb2-69" aria-hidden="true" tabindex="-1"></a><span class="fu">load</span>(<span class="st">&#39;docs/final_data_plots/RawDataRead.RData&#39;</span>)</span></code></pre></div>
-<p>-1. Get datetimes from python script.
-0. Copy text of raw documents to separate vector for visualization/results.
-1. Make lower case, emove stop words + “Reuters”, punctuation, and numbers; <em>No</em> stemming was ultimately used.
-3. Create binary term-document matrix to remove terms occurring in less than 5 documents.
-5. Remove documents left with fewer than 10 words remaining.
-6. Ready the datetime, topics, and heading information for visualization.</p>
+<span id="cb2-68"><a href="index.html#cb2-68" aria-hidden="true" tabindex="-1"></a><span class="co"># save(text,head,Reuters,lewissplit,datetime,file=&#39;RawDataRead.RData&#39;)</span></span>
+<span id="cb2-69"><a href="index.html#cb2-69" aria-hidden="true" tabindex="-1"></a><span class="co"># load(&#39;docs/final_data_plots/RawDataRead.RData&#39;)</span></span></code></pre></div>
+<ol style="list-style-type: decimal">
+<li>Make lower case, emove stop words + “Reuters”, punctuation, and numbers; Employ stemming.</li>
+<li>Create binary term-document matrix to remove terms occurring in less than 5 documents.</li>
+<li>Remove documents left with fewer than 10 words remaining.</li>
+<li>Subset the datetime, topics, and heading information accordingly.</li>
+</ol>
 <div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="index.html#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co"># load(&#39;Reuters.RData&#39;)</span></span>
-<span id="cb3-2"><a href="index.html#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="co"># # Step 0</span></span>
+<span id="cb3-2"><a href="index.html#cb3-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb3-3"><a href="index.html#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="co"># # 1</span></span>
 <span id="cb3-4"><a href="index.html#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="co"># ############################################################</span></span>
 <span id="cb3-5"><a href="index.html#cb3-5" aria-hidden="true" tabindex="-1"></a><span class="co"># R = Reuters</span></span>
 <span id="cb3-6"><a href="index.html#cb3-6" aria-hidden="true" tabindex="-1"></a><span class="co"># R = tm_map(R,content_transformer(tolower))</span></span>
-<span id="cb3-7"><a href="index.html#cb3-7" aria-hidden="true" tabindex="-1"></a><span class="co"># # ############################################################</span></span>
-<span id="cb3-8"><a href="index.html#cb3-8" aria-hidden="true" tabindex="-1"></a><span class="co"># # # 2</span></span>
-<span id="cb3-9"><a href="index.html#cb3-9" aria-hidden="true" tabindex="-1"></a><span class="co"># # ############################################################</span></span>
-<span id="cb3-10"><a href="index.html#cb3-10" aria-hidden="true" tabindex="-1"></a><span class="co"># R = tm_map(R,removeWords,stopwords(&quot;en&quot;))</span></span>
-<span id="cb3-11"><a href="index.html#cb3-11" aria-hidden="true" tabindex="-1"></a><span class="co"># R = tm_map(R,removePunctuation)</span></span>
-<span id="cb3-12"><a href="index.html#cb3-12" aria-hidden="true" tabindex="-1"></a><span class="co"># R = tm_map(R,removeNumbers)</span></span>
-<span id="cb3-13"><a href="index.html#cb3-13" aria-hidden="true" tabindex="-1"></a><span class="co"># R = tm_map(R,stemDocument)</span></span>
-<span id="cb3-14"><a href="index.html#cb3-14" aria-hidden="true" tabindex="-1"></a><span class="co"># R = tm_map(R,removeWords, c(&#39;reuter&#39;, &#39;dlrs&#39;, &#39;mln&#39;, &#39;said&#39;,&#39;will&#39;, &#39;year&#39;, &#39;compani&#39;,&#39;pct&#39;,&#39;corp&#39; ))</span></span>
-<span id="cb3-15"><a href="index.html#cb3-15" aria-hidden="true" tabindex="-1"></a><span class="co"># # ############################################################</span></span>
-<span id="cb3-16"><a href="index.html#cb3-16" aria-hidden="true" tabindex="-1"></a><span class="co"># # # 3</span></span>
-<span id="cb3-17"><a href="index.html#cb3-17" aria-hidden="true" tabindex="-1"></a><span class="co"># # ############################################################</span></span>
-<span id="cb3-18"><a href="index.html#cb3-18" aria-hidden="true" tabindex="-1"></a><span class="co"># tdm = TermDocumentMatrix(R)</span></span>
-<span id="cb3-19"><a href="index.html#cb3-19" aria-hidden="true" tabindex="-1"></a><span class="co"># binary = weightBin(tdm)</span></span>
-<span id="cb3-20"><a href="index.html#cb3-20" aria-hidden="true" tabindex="-1"></a><span class="co"># # ############################################################</span></span>
-<span id="cb3-21"><a href="index.html#cb3-21" aria-hidden="true" tabindex="-1"></a><span class="co"># # # 4</span></span>
-<span id="cb3-22"><a href="index.html#cb3-22" aria-hidden="true" tabindex="-1"></a><span class="co"># # ############################################################</span></span>
-<span id="cb3-23"><a href="index.html#cb3-23" aria-hidden="true" tabindex="-1"></a><span class="co"># keep_terms = row_sums(binary)&gt;=5</span></span>
-<span id="cb3-24"><a href="index.html#cb3-24" aria-hidden="true" tabindex="-1"></a><span class="co"># tdm = tdm[keep_terms,]</span></span>
-<span id="cb3-25"><a href="index.html#cb3-25" aria-hidden="true" tabindex="-1"></a><span class="co"># # ############################################################</span></span>
-<span id="cb3-26"><a href="index.html#cb3-26" aria-hidden="true" tabindex="-1"></a><span class="co"># # # 5</span></span>
+<span id="cb3-7"><a href="index.html#cb3-7" aria-hidden="true" tabindex="-1"></a><span class="co"># R = tm_map(R,removeWords,stopwords(&quot;en&quot;))</span></span>
+<span id="cb3-8"><a href="index.html#cb3-8" aria-hidden="true" tabindex="-1"></a><span class="co"># R = tm_map(R,removePunctuation)</span></span>
+<span id="cb3-9"><a href="index.html#cb3-9" aria-hidden="true" tabindex="-1"></a><span class="co"># R = tm_map(R,removeNumbers)</span></span>
+<span id="cb3-10"><a href="index.html#cb3-10" aria-hidden="true" tabindex="-1"></a><span class="co"># R = tm_map(R,stemDocument)</span></span>
+<span id="cb3-11"><a href="index.html#cb3-11" aria-hidden="true" tabindex="-1"></a><span class="co"># R = tm_map(R,removeWords, c(&#39;reuter&#39;, &#39;dlrs&#39;, &#39;mln&#39;, &#39;said&#39;,&#39;will&#39;, &#39;year&#39;, &#39;compani&#39;,&#39;pct&#39;,&#39;corp&#39; ))</span></span>
+<span id="cb3-12"><a href="index.html#cb3-12" aria-hidden="true" tabindex="-1"></a><span class="co"># # ############################################################</span></span>
+<span id="cb3-13"><a href="index.html#cb3-13" aria-hidden="true" tabindex="-1"></a><span class="co"># # 2</span></span>
+<span id="cb3-14"><a href="index.html#cb3-14" aria-hidden="true" tabindex="-1"></a><span class="co"># # ############################################################</span></span>
+<span id="cb3-15"><a href="index.html#cb3-15" aria-hidden="true" tabindex="-1"></a><span class="co"># tdm = TermDocumentMatrix(R)</span></span>
+<span id="cb3-16"><a href="index.html#cb3-16" aria-hidden="true" tabindex="-1"></a><span class="co"># binary = weightBin(tdm)</span></span>
+<span id="cb3-17"><a href="index.html#cb3-17" aria-hidden="true" tabindex="-1"></a><span class="co"># keep_terms = row_sums(binary)&gt;=5</span></span>
+<span id="cb3-18"><a href="index.html#cb3-18" aria-hidden="true" tabindex="-1"></a><span class="co"># tdm = tdm[keep_terms,]</span></span>
+<span id="cb3-19"><a href="index.html#cb3-19" aria-hidden="true" tabindex="-1"></a><span class="co"># # ############################################################</span></span>
+<span id="cb3-20"><a href="index.html#cb3-20" aria-hidden="true" tabindex="-1"></a><span class="co"># # 3</span></span>
+<span id="cb3-21"><a href="index.html#cb3-21" aria-hidden="true" tabindex="-1"></a><span class="co"># # ############################################################</span></span>
+<span id="cb3-22"><a href="index.html#cb3-22" aria-hidden="true" tabindex="-1"></a><span class="co"># keep_docs = col_sums(tdm)&gt;10</span></span>
+<span id="cb3-23"><a href="index.html#cb3-23" aria-hidden="true" tabindex="-1"></a><span class="co"># R = R[keep_docs]</span></span>
+<span id="cb3-24"><a href="index.html#cb3-24" aria-hidden="true" tabindex="-1"></a><span class="co"># tdm = tdm[,keep_docs ]</span></span>
+<span id="cb3-25"><a href="index.html#cb3-25" aria-hidden="true" tabindex="-1"></a><span class="co"># dim(tdm)</span></span>
+<span id="cb3-26"><a href="index.html#cb3-26" aria-hidden="true" tabindex="-1"></a><span class="co"># length(R)</span></span>
 <span id="cb3-27"><a href="index.html#cb3-27" aria-hidden="true" tabindex="-1"></a><span class="co"># # ############################################################</span></span>
-<span id="cb3-28"><a href="index.html#cb3-28" aria-hidden="true" tabindex="-1"></a><span class="co"># keep_docs = col_sums(tdm)&gt;10</span></span>
-<span id="cb3-29"><a href="index.html#cb3-29" aria-hidden="true" tabindex="-1"></a><span class="co"># R = R[keep_docs]</span></span>
-<span id="cb3-30"><a href="index.html#cb3-30" aria-hidden="true" tabindex="-1"></a><span class="co"># tdm = tdm[,keep_docs ]</span></span>
-<span id="cb3-31"><a href="index.html#cb3-31" aria-hidden="true" tabindex="-1"></a><span class="co"># dim(tdm)</span></span>
-<span id="cb3-32"><a href="index.html#cb3-32" aria-hidden="true" tabindex="-1"></a><span class="co"># length(R)</span></span>
-<span id="cb3-33"><a href="index.html#cb3-33" aria-hidden="true" tabindex="-1"></a><span class="co"># datetime = datetime[keep_docs]</span></span>
-<span id="cb3-34"><a href="index.html#cb3-34" aria-hidden="true" tabindex="-1"></a><span class="co"># lewissplit=lewissplit[keep_docs]</span></span>
-<span id="cb3-35"><a href="index.html#cb3-35" aria-hidden="true" tabindex="-1"></a><span class="co"># head=head[keep_docs]</span></span>
-<span id="cb3-36"><a href="index.html#cb3-36" aria-hidden="true" tabindex="-1"></a><span class="co"># raw_text=text[keep_docs]</span></span>
-<span id="cb3-37"><a href="index.html#cb3-37" aria-hidden="true" tabindex="-1"></a><span class="co"># #############################################################</span></span>
-<span id="cb3-38"><a href="index.html#cb3-38" aria-hidden="true" tabindex="-1"></a><span class="co"># # add breaks for text wrapping</span></span>
-<span id="cb3-39"><a href="index.html#cb3-39" aria-hidden="true" tabindex="-1"></a><span class="co"># #############################################################</span></span>
-<span id="cb3-40"><a href="index.html#cb3-40" aria-hidden="true" tabindex="-1"></a><span class="co"># raw_text = gsub(&quot;(.{60,}?)\\s&quot;, &quot;\\1&lt;br&gt;&quot;, raw_text)</span></span>
-<span id="cb3-41"><a href="index.html#cb3-41" aria-hidden="true" tabindex="-1"></a><span class="do">############################################################</span></span>
-<span id="cb3-42"><a href="index.html#cb3-42" aria-hidden="true" tabindex="-1"></a><span class="co"># Save data to avoid repeat processing</span></span>
-<span id="cb3-43"><a href="index.html#cb3-43" aria-hidden="true" tabindex="-1"></a><span class="do">############################################################</span></span>
-<span id="cb3-44"><a href="index.html#cb3-44" aria-hidden="true" tabindex="-1"></a><span class="co">#save(raw_text,head,lewissplit,tdm,R,datetime, file=&#39;processedV2.RData&#39;)</span></span>
-<span id="cb3-45"><a href="index.html#cb3-45" aria-hidden="true" tabindex="-1"></a><span class="fu">load</span>(<span class="st">&#39;docs/final_data_plots/processedV2.RData&#39;</span>)</span></code></pre></div>
+<span id="cb3-28"><a href="index.html#cb3-28" aria-hidden="true" tabindex="-1"></a><span class="co"># # 4</span></span>
+<span id="cb3-29"><a href="index.html#cb3-29" aria-hidden="true" tabindex="-1"></a><span class="co"># # ############################################################</span></span>
+<span id="cb3-30"><a href="index.html#cb3-30" aria-hidden="true" tabindex="-1"></a><span class="co"># datetime = datetime[keep_docs]</span></span>
+<span id="cb3-31"><a href="index.html#cb3-31" aria-hidden="true" tabindex="-1"></a><span class="co"># lewissplit=lewissplit[keep_docs]</span></span>
+<span id="cb3-32"><a href="index.html#cb3-32" aria-hidden="true" tabindex="-1"></a><span class="co"># head=head[keep_docs]</span></span>
+<span id="cb3-33"><a href="index.html#cb3-33" aria-hidden="true" tabindex="-1"></a><span class="co"># raw_text=text[keep_docs]</span></span>
+<span id="cb3-34"><a href="index.html#cb3-34" aria-hidden="true" tabindex="-1"></a><span class="co"># #############################################################</span></span>
+<span id="cb3-35"><a href="index.html#cb3-35" aria-hidden="true" tabindex="-1"></a><span class="co"># # add breaks for text wrapping</span></span>
+<span id="cb3-36"><a href="index.html#cb3-36" aria-hidden="true" tabindex="-1"></a><span class="co"># #############################################################</span></span>
+<span id="cb3-37"><a href="index.html#cb3-37" aria-hidden="true" tabindex="-1"></a><span class="co"># raw_text = gsub(&quot;(.{60,}?)\\s&quot;, &quot;\\1&lt;br&gt;&quot;, raw_text)</span></span>
+<span id="cb3-38"><a href="index.html#cb3-38" aria-hidden="true" tabindex="-1"></a><span class="co"># ############################################################</span></span>
+<span id="cb3-39"><a href="index.html#cb3-39" aria-hidden="true" tabindex="-1"></a><span class="co"># Save data to avoid repeat processing</span></span>
+<span id="cb3-40"><a href="index.html#cb3-40" aria-hidden="true" tabindex="-1"></a><span class="co"># ############################################################</span></span>
+<span id="cb3-41"><a href="index.html#cb3-41" aria-hidden="true" tabindex="-1"></a><span class="co">#save(raw_text,head,lewissplit,tdm,R,datetime, file=&#39;processedV2.RData&#39;)</span></span>
+<span id="cb3-42"><a href="index.html#cb3-42" aria-hidden="true" tabindex="-1"></a><span class="fu">load</span>(<span class="st">&#39;docs/final_data_plots/processedV2.RData&#39;</span>)</span></code></pre></div>
 </div>
             </section>
 
