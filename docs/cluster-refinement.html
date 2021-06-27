@@ -148,10 +148,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 </ul></li>
 </ul></li>
 <li class="chapter" data-level="3" data-path="umap.html"><a href="umap.html"><i class="fa fa-check"></i><b>3</b> UMAP</a></li>
-<li class="chapter" data-level="4" data-path="clustering-hdbscan.html"><a href="clustering-hdbscan.html"><i class="fa fa-check"></i><b>4</b> Clustering: HDBSCAN</a>
-<ul>
-<li class="chapter" data-level="4.1" data-path="clustering-hdbscan.html"><a href="clustering-hdbscan.html#prepare-top-words-cluster-documents"><i class="fa fa-check"></i><b>4.1</b> Prepare top words, Cluster documents</a></li>
-</ul></li>
+<li class="chapter" data-level="4" data-path="clustering-hdbscan.html"><a href="clustering-hdbscan.html"><i class="fa fa-check"></i><b>4</b> Clustering: HDBSCAN</a></li>
 <li class="chapter" data-level="5" data-path="the-grand-visualization.html"><a href="the-grand-visualization.html"><i class="fa fa-check"></i><b>5</b> The Grand Visualization</a>
 <ul>
 <li class="chapter" data-level="5.1" data-path="the-grand-visualization.html"><a href="the-grand-visualization.html#omit-some-noise-points-for-more-cluster-clarity"><i class="fa fa-check"></i><b>5.1</b> Omit some noise points for more cluster clarity</a></li>
@@ -160,9 +157,10 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <ul>
 <li class="chapter" data-level="6.1" data-path="cluster-refinement.html"><a href="cluster-refinement.html#refinement-idea-1-clustering-the-centroids"><i class="fa fa-check"></i><b>6.1</b> Refinement Idea 1: Clustering the centroids</a>
 <ul>
-<li class="chapter" data-level="" data-path="cluster-refinement.html"><a href="cluster-refinement.html#grand-visualization-of-refined-clusters"><i class="fa fa-check"></i>Grand Visualization of Refined Clusters</a></li>
+<li class="chapter" data-level="" data-path="cluster-refinement.html"><a href="cluster-refinement.html#topic-keywords-for-clusters"><i class="fa fa-check"></i>Topic Keywords for Clusters</a></li>
+<li class="chapter" data-level="" data-path="cluster-refinement.html"><a href="cluster-refinement.html#cluster-summarization"><i class="fa fa-check"></i>Cluster Summarization</a></li>
+<li class="chapter" data-level="" data-path="cluster-refinement.html"><a href="cluster-refinement.html#visualization-of-refined-clusters"><i class="fa fa-check"></i>Visualization of Refined Clusters</a></li>
 </ul></li>
-<li class="chapter" data-level="6.2" data-path="cluster-refinement.html"><a href="cluster-refinement.html#refinement-idea-2-divide-and-conquer"><i class="fa fa-check"></i><b>6.2</b> Refinement Idea 2: Divide and Conquer</a></li>
 </ul></li>
 <li class="divider"></li>
 <li><a href="https://github.com/rstudio/bookdown" target="blank">Published with bookdown</a></li>
@@ -185,97 +183,117 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
             <section class="normal" id="section-">
 <div id="cluster-refinement" class="section level1" number="6">
 <h1><span class="header-section-number">6</span> Cluster Refinement</h1>
-<p>Problems with our initial clustering:<br />
-1. Many medium-big clusters get broken up even though they seem nicely separated on the UMAP projection.<br />
-2. The big center blob is begging to be dealt with a bit better. </p>
-<p>Three ideas for potential refinement:<br />
+<p>Problem with our initial clustering: Many medium-big clusters get broken up even though they seem nicely separated on the UMAP projection.<br />
+</p>
+<p>Two ideas for potential refinement:<br />
 1. Run the clustering again on centroids of clusters<br />
-2. Focus on the blob and see if treating it separately helps - potentially less information overall to squeeze into the viz, allowing for more separation - divide and conquer.<br />
-3. <strong>Take all the existing clusters as single documents (i.e. paste all documents in a cluster together into single document for each cluster) – repeat this process.</strong> I think this is a nice idea but I don’t believe I’ll have time to play with it.<br />
+2. <strong>Take all the existing clusters as single documents (i.e. paste all documents in a cluster together into single document for each cluster) – repeat this process.</strong> I think this is a nice idea but I don’t believe I’ll have time to play with it.<br />
 </p>
 <p>The first idea is easier so we’ll start there:</p>
 <div id="refinement-idea-1-clustering-the-centroids" class="section level2" number="6.1">
 <h2><span class="header-section-number">6.1</span> Refinement Idea 1: Clustering the centroids</h2>
-<div class="sourceCode" id="cb15"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb15-1"><a href="cluster-refinement.html#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="co"># cen_clus = hdbscan(centroids, 3) # Down to 103 Clusters...Looks Pretty Good. </span></span>
-<span id="cb15-2"><a href="cluster-refinement.html#cb15-2" aria-hidden="true" tabindex="-1"></a><span class="co"># save(cen_clus,file=&#39;docs/final_data_plots/cen_clus.RData&#39;)</span></span>
-<span id="cb15-3"><a href="cluster-refinement.html#cb15-3" aria-hidden="true" tabindex="-1"></a><span class="fu">load</span>(<span class="st">&#39;docs/final_data_plots/cen_clus.RData&#39;</span>)</span>
-<span id="cb15-4"><a href="cluster-refinement.html#cb15-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-5"><a href="cluster-refinement.html#cb15-5" aria-hidden="true" tabindex="-1"></a>fig <span class="ot">&lt;-</span> <span class="fu">plot_ly</span>(<span class="at">type =</span> <span class="st">&#39;scatter&#39;</span>, <span class="at">mode =</span> <span class="st">&#39;markers&#39;</span>)<span class="sc">%&gt;%</span></span>
-<span id="cb15-6"><a href="cluster-refinement.html#cb15-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">add_trace</span>(<span class="at">x =</span> centroids[,<span class="dv">1</span>],</span>
-<span id="cb15-7"><a href="cluster-refinement.html#cb15-7" aria-hidden="true" tabindex="-1"></a>            <span class="at">y =</span> centroids[,<span class="dv">2</span>],</span>
-<span id="cb15-8"><a href="cluster-refinement.html#cb15-8" aria-hidden="true" tabindex="-1"></a>            <span class="at">text =</span> <span class="sc">~</span><span class="fu">paste</span>(<span class="st">&#39;Key Words:&#39;</span>, displayWords,<span class="st">&quot;&lt;br&gt;Cluster Number: &quot;</span>, cen_clus<span class="sc">$</span>cluster ),</span>
-<span id="cb15-9"><a href="cluster-refinement.html#cb15-9" aria-hidden="true" tabindex="-1"></a>            <span class="at">color=</span><span class="fu">factor</span>(cen_clus<span class="sc">$</span>cluster),</span>
-<span id="cb15-10"><a href="cluster-refinement.html#cb15-10" aria-hidden="true" tabindex="-1"></a>            <span class="at">marker=</span><span class="fu">list</span>( <span class="at">opacity=</span><span class="fl">0.6</span>),</span>
-<span id="cb15-11"><a href="cluster-refinement.html#cb15-11" aria-hidden="true" tabindex="-1"></a>            <span class="at">showlegend =</span> <span class="cn">FALSE</span>)</span>
-<span id="cb15-12"><a href="cluster-refinement.html#cb15-12" aria-hidden="true" tabindex="-1"></a><span class="co">#saveWidget(fig, &quot;docs/Centroid_Clus.html&quot;)</span></span></code></pre></div>
+<div id="topic-keywords-for-clusters" class="section level3 unnumbered">
+<h3>Topic Keywords for Clusters</h3>
+<p>Get top words for further visualization and pile all documents in a cluster into one giant document for the purposes of summarization.</p>
+<div class="sourceCode" id="cb14"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb14-1"><a href="cluster-refinement.html#cb14-1" aria-hidden="true" tabindex="-1"></a>top.words<span class="ot">=</span><span class="fu">list</span>()</span>
+<span id="cb14-2"><a href="cluster-refinement.html#cb14-2" aria-hidden="true" tabindex="-1"></a>cluster.docs <span class="ot">=</span> <span class="fu">vector</span>()</span>
+<span id="cb14-3"><a href="cluster-refinement.html#cb14-3" aria-hidden="true" tabindex="-1"></a>centroids <span class="ot">=</span> <span class="fu">matrix</span>(<span class="cn">NA</span>,k,<span class="dv">2</span>)</span>
+<span id="cb14-4"><a href="cluster-refinement.html#cb14-4" aria-hidden="true" tabindex="-1"></a>mem<span class="ot">=</span><span class="fu">matrix</span>(<span class="cn">NA</span>,<span class="at">nrow=</span>n,<span class="at">ncol=</span>k)</span>
+<span id="cb14-5"><a href="cluster-refinement.html#cb14-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-6"><a href="cluster-refinement.html#cb14-6" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span>(i <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span>k){</span>
+<span id="cb14-7"><a href="cluster-refinement.html#cb14-7" aria-hidden="true" tabindex="-1"></a>  mem[,i] <span class="ot">=</span> clus<span class="sc">$</span>cluster <span class="sc">==</span>i</span>
+<span id="cb14-8"><a href="cluster-refinement.html#cb14-8" aria-hidden="true" tabindex="-1"></a>  tdmi <span class="ot">=</span> tfidf_tdm[,mem[,i]]</span>
+<span id="cb14-9"><a href="cluster-refinement.html#cb14-9" aria-hidden="true" tabindex="-1"></a>  rs <span class="ot">=</span> <span class="fu">row_sums</span>(tdmi)</span>
+<span id="cb14-10"><a href="cluster-refinement.html#cb14-10" aria-hidden="true" tabindex="-1"></a>  top.words[[i]] <span class="ot">=</span> <span class="fu">names</span>(rs[<span class="fu">order</span>(rs,<span class="at">decreasing=</span>T)])[<span class="dv">1</span><span class="sc">:</span><span class="dv">10</span>]</span>
+<span id="cb14-11"><a href="cluster-refinement.html#cb14-11" aria-hidden="true" tabindex="-1"></a>  cluster.docs[i] <span class="ot">=</span> <span class="fu">paste</span>(raw_text[clus<span class="sc">$</span>cluster <span class="sc">==</span>i], <span class="at">sep=</span><span class="st">&#39;&#39;</span>, <span class="at">collapse=</span><span class="st">&#39; &#39;</span>)</span>
+<span id="cb14-12"><a href="cluster-refinement.html#cb14-12" aria-hidden="true" tabindex="-1"></a>  centroids[i,]<span class="ot">=</span><span class="fu">colMeans</span>(svd_ump[clus<span class="sc">$</span>cluster <span class="sc">==</span>i,])</span>
+<span id="cb14-13"><a href="cluster-refinement.html#cb14-13" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb14-14"><a href="cluster-refinement.html#cb14-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-15"><a href="cluster-refinement.html#cb14-15" aria-hidden="true" tabindex="-1"></a>displayWords<span class="ot">=</span><span class="fu">vector</span>()</span>
+<span id="cb14-16"><a href="cluster-refinement.html#cb14-16" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span>(i <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span>k){displayWords[i] <span class="ot">=</span> <span class="fu">paste</span>(top.words[[i]][<span class="dv">1</span><span class="sc">:</span><span class="dv">7</span>] , <span class="at">sep=</span><span class="st">&#39; &#39;</span>, <span class="at">collapse=</span><span class="st">&#39;&lt;br&gt;&#39;</span>)}</span></code></pre></div>
+</div>
+<div id="cluster-summarization" class="section level3 unnumbered">
+<h3>Cluster Summarization</h3>
+<p>To qualitatively evaluate our meta-clustering via centroids on the visualization, we’ll create some naive cluster summaries to display in the plot using the eigenvector centralities of the graph induced by cosine similarity between sentences in the clusters.</p>
+<div class="sourceCode" id="cb15"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb15-1"><a href="cluster-refinement.html#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="co"># SummarySentences=vector()</span></span>
+<span id="cb15-2"><a href="cluster-refinement.html#cb15-2" aria-hidden="true" tabindex="-1"></a><span class="co"># for(i in 1:k){</span></span>
+<span id="cb15-3"><a href="cluster-refinement.html#cb15-3" aria-hidden="true" tabindex="-1"></a><span class="co"># t=cluster.docs[i]</span></span>
+<span id="cb15-4"><a href="cluster-refinement.html#cb15-4" aria-hidden="true" tabindex="-1"></a><span class="co"># t = gsub(&quot;&lt;br&gt;&quot;, &quot; &quot;, t, fixed =T)</span></span>
+<span id="cb15-5"><a href="cluster-refinement.html#cb15-5" aria-hidden="true" tabindex="-1"></a><span class="co"># # Change alternative sentence-ending punctuation to &#39;.&#39;</span></span>
+<span id="cb15-6"><a href="cluster-refinement.html#cb15-6" aria-hidden="true" tabindex="-1"></a><span class="co"># t = gsub(&quot;\\?&quot;, &quot;.&quot;, t)</span></span>
+<span id="cb15-7"><a href="cluster-refinement.html#cb15-7" aria-hidden="true" tabindex="-1"></a><span class="co"># t = gsub(&quot;\\!&quot;, &quot;.&quot;, t)</span></span>
+<span id="cb15-8"><a href="cluster-refinement.html#cb15-8" aria-hidden="true" tabindex="-1"></a><span class="co"># # Split by sentence</span></span>
+<span id="cb15-9"><a href="cluster-refinement.html#cb15-9" aria-hidden="true" tabindex="-1"></a><span class="co"># t2 = strsplit(t, &quot;.&quot;,fixed=TRUE)</span></span>
+<span id="cb15-10"><a href="cluster-refinement.html#cb15-10" aria-hidden="true" tabindex="-1"></a><span class="co"># corpus &lt;- Corpus(VectorSource(as.data.frame(t2)[,1]))</span></span>
+<span id="cb15-11"><a href="cluster-refinement.html#cb15-11" aria-hidden="true" tabindex="-1"></a><span class="co"># # Remove stop words, numbers and stem</span></span>
+<span id="cb15-12"><a href="cluster-refinement.html#cb15-12" aria-hidden="true" tabindex="-1"></a><span class="co"># corpus = tm_map(corpus,removeWords,c(stopwords(&quot;en&quot;),&#39;reuter&#39;, &#39;dlrs&#39;, &#39;mln&#39;, &#39;said&#39;,&#39;will&#39;, &#39;year&#39;, &#39;compani&#39;,&#39;pct&#39;,&#39;corp&#39;))</span></span>
+<span id="cb15-13"><a href="cluster-refinement.html#cb15-13" aria-hidden="true" tabindex="-1"></a><span class="co"># corpus = tm_map(corpus,removeNumbers)</span></span>
+<span id="cb15-14"><a href="cluster-refinement.html#cb15-14" aria-hidden="true" tabindex="-1"></a><span class="co"># corpus = tm_map(corpus,stemDocument)</span></span>
+<span id="cb15-15"><a href="cluster-refinement.html#cb15-15" aria-hidden="true" tabindex="-1"></a><span class="co"># ########################################################################</span></span>
+<span id="cb15-16"><a href="cluster-refinement.html#cb15-16" aria-hidden="true" tabindex="-1"></a><span class="co"># # Remove empty documents that appear after removal of stopwords and numbers</span></span>
+<span id="cb15-17"><a href="cluster-refinement.html#cb15-17" aria-hidden="true" tabindex="-1"></a><span class="co"># td1 = TermDocumentMatrix(corpus)</span></span>
+<span id="cb15-18"><a href="cluster-refinement.html#cb15-18" aria-hidden="true" tabindex="-1"></a><span class="co"># empty.cols = col_sums(td1)==0</span></span>
+<span id="cb15-19"><a href="cluster-refinement.html#cb15-19" aria-hidden="true" tabindex="-1"></a><span class="co"># td1 = td1[,!empty.cols]</span></span>
+<span id="cb15-20"><a href="cluster-refinement.html#cb15-20" aria-hidden="true" tabindex="-1"></a><span class="co"># raw=unlist(t2)[!empty.cols]</span></span>
+<span id="cb15-21"><a href="cluster-refinement.html#cb15-21" aria-hidden="true" tabindex="-1"></a><span class="co"># if(length(empty.cols)&gt;0){corpus = corpus[!empty.cols]}</span></span>
+<span id="cb15-22"><a href="cluster-refinement.html#cb15-22" aria-hidden="true" tabindex="-1"></a><span class="co"># td = weightTfIdf(td1,normalize=T)</span></span>
+<span id="cb15-23"><a href="cluster-refinement.html#cb15-23" aria-hidden="true" tabindex="-1"></a><span class="co"># tdm_norm = apply(td, 2, function(x){x/c(sqrt(t(x)%*%x))})</span></span>
+<span id="cb15-24"><a href="cluster-refinement.html#cb15-24" aria-hidden="true" tabindex="-1"></a><span class="co"># tdm_norm = as(tdm_norm,&quot;sparseMatrix&quot;)</span></span>
+<span id="cb15-25"><a href="cluster-refinement.html#cb15-25" aria-hidden="true" tabindex="-1"></a><span class="co"># # Cosine similarity</span></span>
+<span id="cb15-26"><a href="cluster-refinement.html#cb15-26" aria-hidden="true" tabindex="-1"></a><span class="co"># C=t(tdm_norm)%*%tdm_norm</span></span>
+<span id="cb15-27"><a href="cluster-refinement.html#cb15-27" aria-hidden="true" tabindex="-1"></a><span class="co"># # Remove self loops</span></span>
+<span id="cb15-28"><a href="cluster-refinement.html#cb15-28" aria-hidden="true" tabindex="-1"></a><span class="co"># C[C&gt;0.9999999] = 0</span></span>
+<span id="cb15-29"><a href="cluster-refinement.html#cb15-29" aria-hidden="true" tabindex="-1"></a><span class="co"># g = graph_from_adjacency_matrix(C, weighted = T)</span></span>
+<span id="cb15-30"><a href="cluster-refinement.html#cb15-30" aria-hidden="true" tabindex="-1"></a><span class="co"># j=order(eigen_centrality(g)$vector,decreasing=T)</span></span>
+<span id="cb15-31"><a href="cluster-refinement.html#cb15-31" aria-hidden="true" tabindex="-1"></a><span class="co"># SummarySentences[i] = paste(raw[j[1:5]], sep= &#39; &#39;,collapse=&#39;&lt;br&gt;&#39;)</span></span>
+<span id="cb15-32"><a href="cluster-refinement.html#cb15-32" aria-hidden="true" tabindex="-1"></a><span class="co"># }</span></span>
+<span id="cb15-33"><a href="cluster-refinement.html#cb15-33" aria-hidden="true" tabindex="-1"></a><span class="co"># save(SummarySentences, file=&#39;docs/final_data_plots/SummarySentences.RData&#39;)</span></span>
+<span id="cb15-34"><a href="cluster-refinement.html#cb15-34" aria-hidden="true" tabindex="-1"></a><span class="fu">load</span>(<span class="st">&#39;docs/final_data_plots/SummarySentences.RData&#39;</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb16"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb16-1"><a href="cluster-refinement.html#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="co"># cen_clus = hdbscan(centroids, 3) # Down to 81 Clusters...Looks Pretty Good. </span></span>
+<span id="cb16-2"><a href="cluster-refinement.html#cb16-2" aria-hidden="true" tabindex="-1"></a><span class="co"># save(cen_clus,file=&#39;docs/final_data_plots/cen_clus.RData&#39;)</span></span>
+<span id="cb16-3"><a href="cluster-refinement.html#cb16-3" aria-hidden="true" tabindex="-1"></a><span class="fu">load</span>(<span class="st">&#39;docs/final_data_plots/cen_clus.RData&#39;</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb17"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb17-1"><a href="cluster-refinement.html#cb17-1" aria-hidden="true" tabindex="-1"></a>fig <span class="ot">&lt;-</span> <span class="fu">plot_ly</span>(<span class="at">type =</span> <span class="st">&#39;scatter&#39;</span>, <span class="at">mode =</span> <span class="st">&#39;markers&#39;</span>)<span class="sc">%&gt;%</span></span>
+<span id="cb17-2"><a href="cluster-refinement.html#cb17-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">add_trace</span>(<span class="at">x =</span> centroids[,<span class="dv">1</span>],</span>
+<span id="cb17-3"><a href="cluster-refinement.html#cb17-3" aria-hidden="true" tabindex="-1"></a>            <span class="at">y =</span> centroids[,<span class="dv">2</span>],</span>
+<span id="cb17-4"><a href="cluster-refinement.html#cb17-4" aria-hidden="true" tabindex="-1"></a>            <span class="at">text =</span> <span class="sc">~</span><span class="fu">paste</span>(<span class="st">&#39;Key Words:&#39;</span>, displayWords,<span class="st">&quot;&lt;br&gt;Cluster Number: &quot;</span>, cen_clus<span class="sc">$</span>cluster,</span>
+<span id="cb17-5"><a href="cluster-refinement.html#cb17-5" aria-hidden="true" tabindex="-1"></a>                          <span class="st">&quot;&lt;br&gt;Summary Sentences: &quot;</span>, SummarySentences),</span>
+<span id="cb17-6"><a href="cluster-refinement.html#cb17-6" aria-hidden="true" tabindex="-1"></a>            <span class="at">color=</span><span class="fu">factor</span>(cen_clus<span class="sc">$</span>cluster),</span>
+<span id="cb17-7"><a href="cluster-refinement.html#cb17-7" aria-hidden="true" tabindex="-1"></a>            <span class="at">marker=</span><span class="fu">list</span>( <span class="at">opacity=</span><span class="fl">0.6</span>),</span>
+<span id="cb17-8"><a href="cluster-refinement.html#cb17-8" aria-hidden="true" tabindex="-1"></a>            <span class="at">showlegend =</span> <span class="cn">FALSE</span>)</span>
+<span id="cb17-9"><a href="cluster-refinement.html#cb17-9" aria-hidden="true" tabindex="-1"></a><span class="fu">saveWidget</span>(fig, <span class="st">&quot;docs/Centroid_Clus.html&quot;</span>)</span></code></pre></div>
 <p><a href="https://shainarace.github.io/Reuters/Centroid_Clus.html">Full Page Visualization</a></p>
 <p>Now we just need a function that maps the new centroid clustering back to the original points. Essentially one line of code in R, thanks to subsetting functionality (final line of function <code>remapClusters</code> below) but with the minor problem that noise points create an extra cluster. We simply add the noise cluster to the vector as cluster number <code>k+1</code>, and give it a value of <code>0</code> similar to the noise points. This creates some real problems with noise points.</p>
 <p><em>Additional thought</em> (not implemented) leave the noise points IN and cluster them with the centroids. This is a good idea because it allows points that were previously labeled as noise to potentially join a cluster of nearby centroids.</p>
-<div class="sourceCode" id="cb16"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb16-1"><a href="cluster-refinement.html#cb16-1" aria-hidden="true" tabindex="-1"></a>remapClusters <span class="ot">=</span> <span class="cf">function</span>(cen_clus,clus){</span>
-<span id="cb16-2"><a href="cluster-refinement.html#cb16-2" aria-hidden="true" tabindex="-1"></a>  k <span class="ot">=</span> <span class="fu">length</span>(clus<span class="sc">$</span>cluster_scores)</span>
-<span id="cb16-3"><a href="cluster-refinement.html#cb16-3" aria-hidden="true" tabindex="-1"></a>  c<span class="ot">=</span><span class="fu">as.vector</span>(clus<span class="sc">$</span>cluster)</span>
-<span id="cb16-4"><a href="cluster-refinement.html#cb16-4" aria-hidden="true" tabindex="-1"></a>  c[c<span class="sc">==</span><span class="dv">0</span>]<span class="ot">=</span>k<span class="sc">+</span><span class="dv">1</span></span>
-<span id="cb16-5"><a href="cluster-refinement.html#cb16-5" aria-hidden="true" tabindex="-1"></a>  cc<span class="ot">=</span><span class="fu">as.vector</span>(cen_clus<span class="sc">$</span>cluster)</span>
-<span id="cb16-6"><a href="cluster-refinement.html#cb16-6" aria-hidden="true" tabindex="-1"></a>  cc[k<span class="sc">+</span><span class="dv">1</span>]<span class="ot">=</span><span class="dv">0</span></span>
-<span id="cb16-7"><a href="cluster-refinement.html#cb16-7" aria-hidden="true" tabindex="-1"></a>  new <span class="ot">=</span> cc[c]</span>
-<span id="cb16-8"><a href="cluster-refinement.html#cb16-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">return</span>(new)</span>
-<span id="cb16-9"><a href="cluster-refinement.html#cb16-9" aria-hidden="true" tabindex="-1"></a>  }</span></code></pre></div>
-<div id="grand-visualization-of-refined-clusters" class="section level3 unnumbered">
-<h3>Grand Visualization of Refined Clusters</h3>
-<div class="sourceCode" id="cb17"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb17-1"><a href="cluster-refinement.html#cb17-1" aria-hidden="true" tabindex="-1"></a>newclusters <span class="ot">=</span> <span class="fu">remapClusters</span>(cen_clus, clus) </span>
-<span id="cb17-2"><a href="cluster-refinement.html#cb17-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb17-3"><a href="cluster-refinement.html#cb17-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb17-4"><a href="cluster-refinement.html#cb17-4" aria-hidden="true" tabindex="-1"></a>fig <span class="ot">&lt;-</span> <span class="fu">plot_ly</span>(<span class="at">type =</span> <span class="st">&#39;scatter&#39;</span>, <span class="at">mode =</span> <span class="st">&#39;markers&#39;</span>)</span>
-<span id="cb17-5"><a href="cluster-refinement.html#cb17-5" aria-hidden="true" tabindex="-1"></a>fig <span class="ot">&lt;-</span> fig <span class="sc">%&gt;%</span></span>
-<span id="cb17-6"><a href="cluster-refinement.html#cb17-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">add_trace</span>(</span>
-<span id="cb17-7"><a href="cluster-refinement.html#cb17-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">x =</span> svd_ump[,<span class="dv">1</span>],</span>
-<span id="cb17-8"><a href="cluster-refinement.html#cb17-8" aria-hidden="true" tabindex="-1"></a>    <span class="at">y =</span> svd_ump[,<span class="dv">2</span>],</span>
-<span id="cb17-9"><a href="cluster-refinement.html#cb17-9" aria-hidden="true" tabindex="-1"></a>    <span class="at">text =</span> <span class="sc">~</span><span class="fu">paste</span>(<span class="st">&#39;Heading:&#39;</span>, head ,<span class="st">&quot;&lt;br&gt;Text: &quot;</span>, raw_text ,<span class="st">&quot;&lt;br&gt;Original Cluster Number: &quot;</span>, clusters, <span class="st">&quot;&lt;br&gt;Centroid Cluster Number:&quot;</span>, newclusters ),</span>
-<span id="cb17-10"><a href="cluster-refinement.html#cb17-10" aria-hidden="true" tabindex="-1"></a>    <span class="at">hoverinfo =</span> <span class="st">&#39;text&#39;</span>,</span>
-<span id="cb17-11"><a href="cluster-refinement.html#cb17-11" aria-hidden="true" tabindex="-1"></a>    <span class="at">color =</span> <span class="fu">factor</span>(newclusters),</span>
-<span id="cb17-12"><a href="cluster-refinement.html#cb17-12" aria-hidden="true" tabindex="-1"></a>    <span class="at">marker=</span><span class="fu">list</span>(<span class="at">opacity=</span><span class="fl">0.6</span>),</span>
-<span id="cb17-13"><a href="cluster-refinement.html#cb17-13" aria-hidden="true" tabindex="-1"></a>    <span class="at">showlegend =</span> F</span>
-<span id="cb17-14"><a href="cluster-refinement.html#cb17-14" aria-hidden="true" tabindex="-1"></a>  )</span>
-<span id="cb17-15"><a href="cluster-refinement.html#cb17-15" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb17-16"><a href="cluster-refinement.html#cb17-16" aria-hidden="true" tabindex="-1"></a><span class="co">#saveWidget(fig, &quot;docs/All_centroid_refined_clusters.html&quot;)</span></span></code></pre></div>
+<div class="sourceCode" id="cb18"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb18-1"><a href="cluster-refinement.html#cb18-1" aria-hidden="true" tabindex="-1"></a>remapClusters <span class="ot">=</span> <span class="cf">function</span>(cen_clus,clus){</span>
+<span id="cb18-2"><a href="cluster-refinement.html#cb18-2" aria-hidden="true" tabindex="-1"></a>  k <span class="ot">=</span> <span class="fu">length</span>(clus<span class="sc">$</span>cluster_scores)</span>
+<span id="cb18-3"><a href="cluster-refinement.html#cb18-3" aria-hidden="true" tabindex="-1"></a>  c<span class="ot">=</span><span class="fu">as.vector</span>(clus<span class="sc">$</span>cluster)</span>
+<span id="cb18-4"><a href="cluster-refinement.html#cb18-4" aria-hidden="true" tabindex="-1"></a>  c[c<span class="sc">==</span><span class="dv">0</span>]<span class="ot">=</span>k<span class="sc">+</span><span class="dv">1</span></span>
+<span id="cb18-5"><a href="cluster-refinement.html#cb18-5" aria-hidden="true" tabindex="-1"></a>  cc<span class="ot">=</span><span class="fu">as.vector</span>(cen_clus<span class="sc">$</span>cluster)</span>
+<span id="cb18-6"><a href="cluster-refinement.html#cb18-6" aria-hidden="true" tabindex="-1"></a>  cc[k<span class="sc">+</span><span class="dv">1</span>]<span class="ot">=</span><span class="dv">0</span></span>
+<span id="cb18-7"><a href="cluster-refinement.html#cb18-7" aria-hidden="true" tabindex="-1"></a>  new <span class="ot">=</span> cc[c]</span>
+<span id="cb18-8"><a href="cluster-refinement.html#cb18-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">return</span>(new)</span>
+<span id="cb18-9"><a href="cluster-refinement.html#cb18-9" aria-hidden="true" tabindex="-1"></a>  }</span></code></pre></div>
+</div>
+<div id="visualization-of-refined-clusters" class="section level3 unnumbered">
+<h3>Visualization of Refined Clusters</h3>
+<div class="sourceCode" id="cb19"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb19-1"><a href="cluster-refinement.html#cb19-1" aria-hidden="true" tabindex="-1"></a>newclusters <span class="ot">=</span> <span class="fu">remapClusters</span>(cen_clus, clus) </span>
+<span id="cb19-2"><a href="cluster-refinement.html#cb19-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-3"><a href="cluster-refinement.html#cb19-3" aria-hidden="true" tabindex="-1"></a>fig <span class="ot">&lt;-</span> <span class="fu">plot_ly</span>(<span class="at">type =</span> <span class="st">&#39;scatter&#39;</span>, <span class="at">mode =</span> <span class="st">&#39;markers&#39;</span>)</span>
+<span id="cb19-4"><a href="cluster-refinement.html#cb19-4" aria-hidden="true" tabindex="-1"></a>fig <span class="ot">&lt;-</span> fig <span class="sc">%&gt;%</span></span>
+<span id="cb19-5"><a href="cluster-refinement.html#cb19-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">add_trace</span>(</span>
+<span id="cb19-6"><a href="cluster-refinement.html#cb19-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">x =</span> svd_ump[,<span class="dv">1</span>],</span>
+<span id="cb19-7"><a href="cluster-refinement.html#cb19-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">y =</span> svd_ump[,<span class="dv">2</span>],</span>
+<span id="cb19-8"><a href="cluster-refinement.html#cb19-8" aria-hidden="true" tabindex="-1"></a>    <span class="at">text =</span> <span class="sc">~</span><span class="fu">paste</span>(<span class="st">&#39;Heading:&#39;</span>, head ,<span class="st">&quot;&lt;br&gt;Text: &quot;</span>, raw_text ,<span class="st">&quot;&lt;br&gt;Original Cluster Number: &quot;</span>, clusters, <span class="st">&quot;&lt;br&gt;Centroid Cluster Number:&quot;</span>, newclusters ),</span>
+<span id="cb19-9"><a href="cluster-refinement.html#cb19-9" aria-hidden="true" tabindex="-1"></a>    <span class="at">hoverinfo =</span> <span class="st">&#39;text&#39;</span>,</span>
+<span id="cb19-10"><a href="cluster-refinement.html#cb19-10" aria-hidden="true" tabindex="-1"></a>    <span class="at">color =</span> <span class="fu">factor</span>(newclusters),</span>
+<span id="cb19-11"><a href="cluster-refinement.html#cb19-11" aria-hidden="true" tabindex="-1"></a>    <span class="at">marker=</span><span class="fu">list</span>(<span class="at">opacity=</span><span class="fl">0.6</span>),</span>
+<span id="cb19-12"><a href="cluster-refinement.html#cb19-12" aria-hidden="true" tabindex="-1"></a>    <span class="at">showlegend =</span> F</span>
+<span id="cb19-13"><a href="cluster-refinement.html#cb19-13" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb19-14"><a href="cluster-refinement.html#cb19-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-15"><a href="cluster-refinement.html#cb19-15" aria-hidden="true" tabindex="-1"></a><span class="co"># saveWidget(fig, &quot;docs/All_centroid_refined_clusters.html&quot;)</span></span></code></pre></div>
 <p><a href="https://shainarace.github.io/Reuters/All_centroid_refined_clusters.html">Full Page Visualization</a></p>
-<p>Onto the next thought for refinement: divide and conquer.</p>
-</div>
-</div>
-<div id="refinement-idea-2-divide-and-conquer" class="section level2" number="6.2">
-<h2><span class="header-section-number">6.2</span> Refinement Idea 2: Divide and Conquer</h2>
-<p>Here, we divide the data according to UMAP and recompute the SVD of that subset. We see <em>some</em> better cluster separation than we did in the corresponding rectangle on our original umap viz, but the end result still leaves a lot of room for improvement.</p>
-<div class="sourceCode" id="cb18"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb18-1"><a href="cluster-refinement.html#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Take rectangular subset on the interval x=[-0.5,3] and y=[-1.5,1]</span></span>
-<span id="cb18-2"><a href="cluster-refinement.html#cb18-2" aria-hidden="true" tabindex="-1"></a>index_subset2 <span class="ot">=</span> svd_ump[,<span class="dv">1</span>] <span class="sc">&lt;</span><span class="dv">3</span> <span class="sc">&amp;</span>svd_ump[,<span class="dv">1</span>] <span class="sc">&gt;</span> <span class="sc">-</span><span class="fl">0.5</span> <span class="sc">&amp;</span>  svd_ump[,<span class="dv">2</span>] <span class="sc">&lt;</span><span class="dv">1</span><span class="sc">&amp;</span>  svd_ump[,<span class="dv">2</span>] <span class="sc">&gt;</span> <span class="sc">-</span><span class="fl">1.5</span></span>
-<span id="cb18-3"><a href="cluster-refinement.html#cb18-3" aria-hidden="true" tabindex="-1"></a>tdm_subset <span class="ot">=</span> tdm[,index_subset2]</span>
-<span id="cb18-4"><a href="cluster-refinement.html#cb18-4" aria-hidden="true" tabindex="-1"></a>tdm_subset <span class="ot">=</span> tdm_subset[<span class="fu">row_sums</span>(tdm_subset)<span class="sc">!=</span><span class="dv">0</span>, ]</span>
-<span id="cb18-5"><a href="cluster-refinement.html#cb18-5" aria-hidden="true" tabindex="-1"></a>tfidf_tdm_subset <span class="ot">=</span> <span class="fu">weightTfIdf</span>(tdm_subset, <span class="at">normalize=</span>T)</span>
-<span id="cb18-6"><a href="cluster-refinement.html#cb18-6" aria-hidden="true" tabindex="-1"></a>tfidf_tdm_subset <span class="ot">=</span> <span class="fu">apply</span>(tfidf_tdm_subset, <span class="dv">2</span>, <span class="cf">function</span>(x){x<span class="sc">/</span><span class="fu">c</span>(<span class="fu">sqrt</span>(<span class="fu">t</span>(x)<span class="sc">%*%</span>x))})</span>
-<span id="cb18-7"><a href="cluster-refinement.html#cb18-7" aria-hidden="true" tabindex="-1"></a>tfidf_tdm_subset <span class="ot">&lt;-</span> <span class="fu">as</span>(tfidf_tdm_subset, <span class="st">&quot;sparseMatrix&quot;</span>)</span>
-<span id="cb18-8"><a href="cluster-refinement.html#cb18-8" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb18-9"><a href="cluster-refinement.html#cb18-9" aria-hidden="true" tabindex="-1"></a><span class="co"># Take SVD of the subset and compute the UMAP </span></span>
-<span id="cb18-10"><a href="cluster-refinement.html#cb18-10" aria-hidden="true" tabindex="-1"></a>svd_subset <span class="ot">=</span> <span class="fu">irlba</span>(tfidf_tdm_subset,<span class="dv">150</span>)</span>
-<span id="cb18-11"><a href="cluster-refinement.html#cb18-11" aria-hidden="true" tabindex="-1"></a>svd_subset_map <span class="ot">=</span> <span class="fu">umap</span>(svd_subset<span class="sc">$</span>v)</span>
-<span id="cb18-12"><a href="cluster-refinement.html#cb18-12" aria-hidden="true" tabindex="-1"></a><span class="co"># Subset raw text for visualization</span></span>
-<span id="cb18-13"><a href="cluster-refinement.html#cb18-13" aria-hidden="true" tabindex="-1"></a>raw_text_subset2 <span class="ot">=</span> raw_text[index_subset2]</span>
-<span id="cb18-14"><a href="cluster-refinement.html#cb18-14" aria-hidden="true" tabindex="-1"></a>head_subset2 <span class="ot">=</span> head[index_subset2]</span>
-<span id="cb18-15"><a href="cluster-refinement.html#cb18-15" aria-hidden="true" tabindex="-1"></a><span class="co"># Cluster</span></span>
-<span id="cb18-16"><a href="cluster-refinement.html#cb18-16" aria-hidden="true" tabindex="-1"></a>clus2<span class="ot">=</span><span class="fu">hdbscan</span>(svd_subset_map,<span class="dv">4</span>)</span>
-<span id="cb18-17"><a href="cluster-refinement.html#cb18-17" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb18-18"><a href="cluster-refinement.html#cb18-18" aria-hidden="true" tabindex="-1"></a>fig2 <span class="ot">&lt;-</span> <span class="fu">plot_ly</span>(<span class="at">type =</span> <span class="st">&#39;scatter&#39;</span>, <span class="at">mode =</span> <span class="st">&#39;markers&#39;</span>)</span>
-<span id="cb18-19"><a href="cluster-refinement.html#cb18-19" aria-hidden="true" tabindex="-1"></a>fig2 <span class="ot">&lt;-</span> fig2 <span class="sc">%&gt;%</span></span>
-<span id="cb18-20"><a href="cluster-refinement.html#cb18-20" aria-hidden="true" tabindex="-1"></a>  <span class="fu">add_trace</span>(</span>
-<span id="cb18-21"><a href="cluster-refinement.html#cb18-21" aria-hidden="true" tabindex="-1"></a>    <span class="at">x =</span> svd_subset_map[,<span class="dv">1</span>],</span>
-<span id="cb18-22"><a href="cluster-refinement.html#cb18-22" aria-hidden="true" tabindex="-1"></a>    <span class="at">y =</span> svd_subset_map[,<span class="dv">2</span>],</span>
-<span id="cb18-23"><a href="cluster-refinement.html#cb18-23" aria-hidden="true" tabindex="-1"></a>    <span class="at">text =</span> <span class="sc">~</span><span class="fu">paste</span>(<span class="st">&#39;heading:&#39;</span>, head_subset2 ,<span class="st">&quot;&lt;br&gt;text: &quot;</span>, raw_text_subset2,<span class="st">&quot;&lt;br&gt;Cluster Number: &quot;</span>, clus2<span class="sc">$</span>cluster ),</span>
-<span id="cb18-24"><a href="cluster-refinement.html#cb18-24" aria-hidden="true" tabindex="-1"></a>    <span class="at">hoverinfo =</span> <span class="st">&#39;text&#39;</span>,</span>
-<span id="cb18-25"><a href="cluster-refinement.html#cb18-25" aria-hidden="true" tabindex="-1"></a>    <span class="at">color=</span><span class="fu">factor</span>(clus2<span class="sc">$</span>cluster),</span>
-<span id="cb18-26"><a href="cluster-refinement.html#cb18-26" aria-hidden="true" tabindex="-1"></a>    <span class="at">showlegend =</span> F</span>
-<span id="cb18-27"><a href="cluster-refinement.html#cb18-27" aria-hidden="true" tabindex="-1"></a>  )</span>
-<span id="cb18-28"><a href="cluster-refinement.html#cb18-28" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb18-29"><a href="cluster-refinement.html#cb18-29" aria-hidden="true" tabindex="-1"></a><span class="fu">saveWidget</span>(fig2, <span class="st">&#39;docs/SubsettingUMAPforRepeatSVD.html&#39;</span>)</span></code></pre></div>
-<p><a href="https://shainarace.github.io/Reuters/SubsettingUMAPforRepeatSVD.html">Full Page Visualization</a></p>
 
+</div>
 </div>
 </div>
             </section>

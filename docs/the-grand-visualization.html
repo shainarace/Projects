@@ -148,10 +148,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 </ul></li>
 </ul></li>
 <li class="chapter" data-level="3" data-path="umap.html"><a href="umap.html"><i class="fa fa-check"></i><b>3</b> UMAP</a></li>
-<li class="chapter" data-level="4" data-path="clustering-hdbscan.html"><a href="clustering-hdbscan.html"><i class="fa fa-check"></i><b>4</b> Clustering: HDBSCAN</a>
-<ul>
-<li class="chapter" data-level="4.1" data-path="clustering-hdbscan.html"><a href="clustering-hdbscan.html#prepare-top-words-cluster-documents"><i class="fa fa-check"></i><b>4.1</b> Prepare top words, Cluster documents</a></li>
-</ul></li>
+<li class="chapter" data-level="4" data-path="clustering-hdbscan.html"><a href="clustering-hdbscan.html"><i class="fa fa-check"></i><b>4</b> Clustering: HDBSCAN</a></li>
 <li class="chapter" data-level="5" data-path="the-grand-visualization.html"><a href="the-grand-visualization.html"><i class="fa fa-check"></i><b>5</b> The Grand Visualization</a>
 <ul>
 <li class="chapter" data-level="5.1" data-path="the-grand-visualization.html"><a href="the-grand-visualization.html#omit-some-noise-points-for-more-cluster-clarity"><i class="fa fa-check"></i><b>5.1</b> Omit some noise points for more cluster clarity</a></li>
@@ -160,9 +157,10 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <ul>
 <li class="chapter" data-level="6.1" data-path="cluster-refinement.html"><a href="cluster-refinement.html#refinement-idea-1-clustering-the-centroids"><i class="fa fa-check"></i><b>6.1</b> Refinement Idea 1: Clustering the centroids</a>
 <ul>
-<li class="chapter" data-level="" data-path="cluster-refinement.html"><a href="cluster-refinement.html#grand-visualization-of-refined-clusters"><i class="fa fa-check"></i>Grand Visualization of Refined Clusters</a></li>
+<li class="chapter" data-level="" data-path="cluster-refinement.html"><a href="cluster-refinement.html#topic-keywords-for-clusters"><i class="fa fa-check"></i>Topic Keywords for Clusters</a></li>
+<li class="chapter" data-level="" data-path="cluster-refinement.html"><a href="cluster-refinement.html#cluster-summarization"><i class="fa fa-check"></i>Cluster Summarization</a></li>
+<li class="chapter" data-level="" data-path="cluster-refinement.html"><a href="cluster-refinement.html#visualization-of-refined-clusters"><i class="fa fa-check"></i>Visualization of Refined Clusters</a></li>
 </ul></li>
-<li class="chapter" data-level="6.2" data-path="cluster-refinement.html"><a href="cluster-refinement.html#refinement-idea-2-divide-and-conquer"><i class="fa fa-check"></i><b>6.2</b> Refinement Idea 2: Divide and Conquer</a></li>
 </ul></li>
 <li class="divider"></li>
 <li><a href="https://github.com/rstudio/bookdown" target="blank">Published with bookdown</a></li>
@@ -186,43 +184,43 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <div id="the-grand-visualization" class="section level1" number="5">
 <h1><span class="header-section-number">5</span> The Grand Visualization</h1>
 <p><strong>Note: We don’t have enough colors! The colors are recycled but hopefully will still help. Cluster numbers in tooltip for certainty</strong></p>
-<div class="sourceCode" id="cb13"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb13-1"><a href="the-grand-visualization.html#cb13-1" aria-hidden="true" tabindex="-1"></a>clusters <span class="ot">=</span> <span class="fu">factor</span>(clus<span class="sc">$</span>cluster)</span>
-<span id="cb13-2"><a href="the-grand-visualization.html#cb13-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb13-3"><a href="the-grand-visualization.html#cb13-3" aria-hidden="true" tabindex="-1"></a>fig <span class="ot">&lt;-</span> <span class="fu">plot_ly</span>(<span class="at">type =</span> <span class="st">&#39;scatter&#39;</span>, <span class="at">mode =</span> <span class="st">&#39;markers&#39;</span>)</span>
-<span id="cb13-4"><a href="the-grand-visualization.html#cb13-4" aria-hidden="true" tabindex="-1"></a>fig <span class="ot">&lt;-</span> fig <span class="sc">%&gt;%</span></span>
-<span id="cb13-5"><a href="the-grand-visualization.html#cb13-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">add_trace</span>(</span>
-<span id="cb13-6"><a href="the-grand-visualization.html#cb13-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">x =</span> svd_ump[,<span class="dv">1</span>],</span>
-<span id="cb13-7"><a href="the-grand-visualization.html#cb13-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">y =</span> svd_ump[,<span class="dv">2</span>],</span>
-<span id="cb13-8"><a href="the-grand-visualization.html#cb13-8" aria-hidden="true" tabindex="-1"></a>    <span class="at">text =</span> <span class="sc">~</span><span class="fu">paste</span>(<span class="st">&#39;Heading:&#39;</span>, head ,<span class="st">&quot;&lt;br&gt;Text: &quot;</span>, raw_text ,<span class="st">&quot;&lt;br&gt;Cluster Number: &quot;</span>, clusters),</span>
-<span id="cb13-9"><a href="the-grand-visualization.html#cb13-9" aria-hidden="true" tabindex="-1"></a>    <span class="at">hoverinfo =</span> <span class="st">&#39;text&#39;</span>,</span>
-<span id="cb13-10"><a href="the-grand-visualization.html#cb13-10" aria-hidden="true" tabindex="-1"></a>    <span class="at">color=</span>clusters,</span>
-<span id="cb13-11"><a href="the-grand-visualization.html#cb13-11" aria-hidden="true" tabindex="-1"></a>    <span class="at">marker =</span> <span class="fu">list</span>( <span class="at">opacity=</span><span class="fl">0.6</span>),</span>
-<span id="cb13-12"><a href="the-grand-visualization.html#cb13-12" aria-hidden="true" tabindex="-1"></a>    <span class="at">showlegend =</span> F</span>
-<span id="cb13-13"><a href="the-grand-visualization.html#cb13-13" aria-hidden="true" tabindex="-1"></a>  )</span>
-<span id="cb13-14"><a href="the-grand-visualization.html#cb13-14" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb13-15"><a href="the-grand-visualization.html#cb13-15" aria-hidden="true" tabindex="-1"></a><span class="co">#saveWidget(fig, &quot;docs/All_clusters_noTopics_UMAPClus_wNoise.html&quot;)</span></span></code></pre></div>
+<div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb12-1"><a href="the-grand-visualization.html#cb12-1" aria-hidden="true" tabindex="-1"></a>clusters <span class="ot">=</span> <span class="fu">factor</span>(clus<span class="sc">$</span>cluster)</span>
+<span id="cb12-2"><a href="the-grand-visualization.html#cb12-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-3"><a href="the-grand-visualization.html#cb12-3" aria-hidden="true" tabindex="-1"></a>fig <span class="ot">&lt;-</span> <span class="fu">plot_ly</span>(<span class="at">type =</span> <span class="st">&#39;scatter&#39;</span>, <span class="at">mode =</span> <span class="st">&#39;markers&#39;</span>)</span>
+<span id="cb12-4"><a href="the-grand-visualization.html#cb12-4" aria-hidden="true" tabindex="-1"></a>fig <span class="ot">&lt;-</span> fig <span class="sc">%&gt;%</span></span>
+<span id="cb12-5"><a href="the-grand-visualization.html#cb12-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">add_trace</span>(</span>
+<span id="cb12-6"><a href="the-grand-visualization.html#cb12-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">x =</span> svd_ump[,<span class="dv">1</span>],</span>
+<span id="cb12-7"><a href="the-grand-visualization.html#cb12-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">y =</span> svd_ump[,<span class="dv">2</span>],</span>
+<span id="cb12-8"><a href="the-grand-visualization.html#cb12-8" aria-hidden="true" tabindex="-1"></a>    <span class="at">text =</span> <span class="sc">~</span><span class="fu">paste</span>(<span class="st">&#39;Heading:&#39;</span>, head ,<span class="st">&quot;&lt;br&gt;Text: &quot;</span>, raw_text ,<span class="st">&quot;&lt;br&gt;Cluster Number: &quot;</span>, clusters),</span>
+<span id="cb12-9"><a href="the-grand-visualization.html#cb12-9" aria-hidden="true" tabindex="-1"></a>    <span class="at">hoverinfo =</span> <span class="st">&#39;text&#39;</span>,</span>
+<span id="cb12-10"><a href="the-grand-visualization.html#cb12-10" aria-hidden="true" tabindex="-1"></a>    <span class="at">color=</span>clusters,</span>
+<span id="cb12-11"><a href="the-grand-visualization.html#cb12-11" aria-hidden="true" tabindex="-1"></a>    <span class="at">marker =</span> <span class="fu">list</span>( <span class="at">opacity=</span><span class="fl">0.6</span>),</span>
+<span id="cb12-12"><a href="the-grand-visualization.html#cb12-12" aria-hidden="true" tabindex="-1"></a>    <span class="at">showlegend =</span> F</span>
+<span id="cb12-13"><a href="the-grand-visualization.html#cb12-13" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb12-14"><a href="the-grand-visualization.html#cb12-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-15"><a href="the-grand-visualization.html#cb12-15" aria-hidden="true" tabindex="-1"></a><span class="co"># saveWidget(fig, &quot;docs/All_clusters_noTopics_UMAPClus_wNoise.html&quot;)</span></span></code></pre></div>
 <p><a href="https://shainarace.github.io/Reuters/All_clusters_noTopics_UMAPClus_wNoise.html">Full Page Visualization</a></p>
 <div id="omit-some-noise-points-for-more-cluster-clarity" class="section level2" number="5.1">
 <h2><span class="header-section-number">5.1</span> Omit some noise points for more cluster clarity</h2>
 <p>We can reduce the noise on the plot by omitting some of the points with high outlier scores; generally I hate doing this because it can be a good way to accidently lose something you didn’t know you wanted. However, it could have it’s advantages as a strategy and the <code>outlier_score</code> of <code>hdbscan()</code> is a nice threshold to play with for further analytical paths.</p>
-<div class="sourceCode" id="cb14"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb14-1"><a href="the-grand-visualization.html#cb14-1" aria-hidden="true" tabindex="-1"></a>index_subset <span class="ot">=</span> clus<span class="sc">$</span>outlier_scores<span class="sc">&lt;</span><span class="fl">0.6</span></span>
-<span id="cb14-2"><a href="the-grand-visualization.html#cb14-2" aria-hidden="true" tabindex="-1"></a>data_subset <span class="ot">=</span> svd_ump[index_subset,]</span>
-<span id="cb14-3"><a href="the-grand-visualization.html#cb14-3" aria-hidden="true" tabindex="-1"></a>raw_text_subset <span class="ot">=</span> raw_text[index_subset]</span>
-<span id="cb14-4"><a href="the-grand-visualization.html#cb14-4" aria-hidden="true" tabindex="-1"></a>head_subset <span class="ot">=</span> head[index_subset]</span>
-<span id="cb14-5"><a href="the-grand-visualization.html#cb14-5" aria-hidden="true" tabindex="-1"></a>clusters <span class="ot">=</span> <span class="fu">factor</span>(clus<span class="sc">$</span>cluster[index_subset])</span>
-<span id="cb14-6"><a href="the-grand-visualization.html#cb14-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb14-7"><a href="the-grand-visualization.html#cb14-7" aria-hidden="true" tabindex="-1"></a>fig <span class="ot">&lt;-</span> <span class="fu">plot_ly</span>(<span class="at">type =</span> <span class="st">&#39;scatter&#39;</span>, <span class="at">mode =</span> <span class="st">&#39;markers&#39;</span>)</span>
-<span id="cb14-8"><a href="the-grand-visualization.html#cb14-8" aria-hidden="true" tabindex="-1"></a>fig <span class="ot">&lt;-</span> fig <span class="sc">%&gt;%</span></span>
-<span id="cb14-9"><a href="the-grand-visualization.html#cb14-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">add_trace</span>(</span>
-<span id="cb14-10"><a href="the-grand-visualization.html#cb14-10" aria-hidden="true" tabindex="-1"></a>    <span class="at">x =</span> data_subset[,<span class="dv">1</span>],</span>
-<span id="cb14-11"><a href="the-grand-visualization.html#cb14-11" aria-hidden="true" tabindex="-1"></a>    <span class="at">y =</span> data_subset[,<span class="dv">2</span>],</span>
-<span id="cb14-12"><a href="the-grand-visualization.html#cb14-12" aria-hidden="true" tabindex="-1"></a>    <span class="at">text =</span> <span class="sc">~</span><span class="fu">paste</span>(<span class="st">&#39;Heading:&#39;</span>, head_subset ,<span class="st">&quot;&lt;br&gt;Text: &quot;</span>, raw_text_subset ,<span class="st">&quot;&lt;br&gt;Cluster Number: &quot;</span>, clusters),</span>
-<span id="cb14-13"><a href="the-grand-visualization.html#cb14-13" aria-hidden="true" tabindex="-1"></a>    <span class="at">hoverinfo =</span> <span class="st">&#39;text&#39;</span>,</span>
-<span id="cb14-14"><a href="the-grand-visualization.html#cb14-14" aria-hidden="true" tabindex="-1"></a>    <span class="at">markers =</span> <span class="fu">list</span>(<span class="at">opacity=</span><span class="fl">0.6</span>),</span>
-<span id="cb14-15"><a href="the-grand-visualization.html#cb14-15" aria-hidden="true" tabindex="-1"></a>    <span class="at">color =</span> clusters,</span>
-<span id="cb14-16"><a href="the-grand-visualization.html#cb14-16" aria-hidden="true" tabindex="-1"></a>    <span class="at">showlegend =</span> F</span>
-<span id="cb14-17"><a href="the-grand-visualization.html#cb14-17" aria-hidden="true" tabindex="-1"></a>  )</span>
-<span id="cb14-18"><a href="the-grand-visualization.html#cb14-18" aria-hidden="true" tabindex="-1"></a><span class="co">#saveWidget(fig, &quot;docs/All_clusters_noTopics_UMAPClus.html&quot;)</span></span></code></pre></div>
+<div class="sourceCode" id="cb13"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb13-1"><a href="the-grand-visualization.html#cb13-1" aria-hidden="true" tabindex="-1"></a>index_subset <span class="ot">=</span> clus<span class="sc">$</span>outlier_scores<span class="sc">&lt;</span><span class="fl">0.6</span></span>
+<span id="cb13-2"><a href="the-grand-visualization.html#cb13-2" aria-hidden="true" tabindex="-1"></a>data_subset <span class="ot">=</span> svd_ump[index_subset,]</span>
+<span id="cb13-3"><a href="the-grand-visualization.html#cb13-3" aria-hidden="true" tabindex="-1"></a>raw_text_subset <span class="ot">=</span> raw_text[index_subset]</span>
+<span id="cb13-4"><a href="the-grand-visualization.html#cb13-4" aria-hidden="true" tabindex="-1"></a>head_subset <span class="ot">=</span> head[index_subset]</span>
+<span id="cb13-5"><a href="the-grand-visualization.html#cb13-5" aria-hidden="true" tabindex="-1"></a>clusters <span class="ot">=</span> <span class="fu">factor</span>(clus<span class="sc">$</span>cluster[index_subset])</span>
+<span id="cb13-6"><a href="the-grand-visualization.html#cb13-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-7"><a href="the-grand-visualization.html#cb13-7" aria-hidden="true" tabindex="-1"></a>fig <span class="ot">&lt;-</span> <span class="fu">plot_ly</span>(<span class="at">type =</span> <span class="st">&#39;scatter&#39;</span>, <span class="at">mode =</span> <span class="st">&#39;markers&#39;</span>)</span>
+<span id="cb13-8"><a href="the-grand-visualization.html#cb13-8" aria-hidden="true" tabindex="-1"></a>fig <span class="ot">&lt;-</span> fig <span class="sc">%&gt;%</span></span>
+<span id="cb13-9"><a href="the-grand-visualization.html#cb13-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">add_trace</span>(</span>
+<span id="cb13-10"><a href="the-grand-visualization.html#cb13-10" aria-hidden="true" tabindex="-1"></a>    <span class="at">x =</span> data_subset[,<span class="dv">1</span>],</span>
+<span id="cb13-11"><a href="the-grand-visualization.html#cb13-11" aria-hidden="true" tabindex="-1"></a>    <span class="at">y =</span> data_subset[,<span class="dv">2</span>],</span>
+<span id="cb13-12"><a href="the-grand-visualization.html#cb13-12" aria-hidden="true" tabindex="-1"></a>    <span class="at">text =</span> <span class="sc">~</span><span class="fu">paste</span>(<span class="st">&#39;Heading:&#39;</span>, head_subset ,<span class="st">&quot;&lt;br&gt;Text: &quot;</span>, raw_text_subset ,<span class="st">&quot;&lt;br&gt;Cluster Number: &quot;</span>, clusters),</span>
+<span id="cb13-13"><a href="the-grand-visualization.html#cb13-13" aria-hidden="true" tabindex="-1"></a>    <span class="at">hoverinfo =</span> <span class="st">&#39;text&#39;</span>,</span>
+<span id="cb13-14"><a href="the-grand-visualization.html#cb13-14" aria-hidden="true" tabindex="-1"></a>    <span class="at">color =</span> clusters,</span>
+<span id="cb13-15"><a href="the-grand-visualization.html#cb13-15" aria-hidden="true" tabindex="-1"></a>    <span class="at">marker =</span> <span class="fu">list</span>(<span class="at">opacity=</span><span class="fl">0.6</span>),</span>
+<span id="cb13-16"><a href="the-grand-visualization.html#cb13-16" aria-hidden="true" tabindex="-1"></a>    <span class="at">showlegend =</span> F</span>
+<span id="cb13-17"><a href="the-grand-visualization.html#cb13-17" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb13-18"><a href="the-grand-visualization.html#cb13-18" aria-hidden="true" tabindex="-1"></a><span class="co"># saveWidget(fig, &quot;docs/All_clusters_noTopics_UMAPClus.html&quot;)</span></span></code></pre></div>
 <p><a href="https://shainarace.github.io/Reuters/All_clusters_noTopics_UMAPClus.html">Full Page Visualization</a></p>
 </div>
 </div>

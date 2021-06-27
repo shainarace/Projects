@@ -148,10 +148,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 </ul></li>
 </ul></li>
 <li class="chapter" data-level="3" data-path="umap.html"><a href="umap.html"><i class="fa fa-check"></i><b>3</b> UMAP</a></li>
-<li class="chapter" data-level="4" data-path="clustering-hdbscan.html"><a href="clustering-hdbscan.html"><i class="fa fa-check"></i><b>4</b> Clustering: HDBSCAN</a>
-<ul>
-<li class="chapter" data-level="4.1" data-path="clustering-hdbscan.html"><a href="clustering-hdbscan.html#prepare-top-words-cluster-documents"><i class="fa fa-check"></i><b>4.1</b> Prepare top words, Cluster documents</a></li>
-</ul></li>
+<li class="chapter" data-level="4" data-path="clustering-hdbscan.html"><a href="clustering-hdbscan.html"><i class="fa fa-check"></i><b>4</b> Clustering: HDBSCAN</a></li>
 <li class="chapter" data-level="5" data-path="the-grand-visualization.html"><a href="the-grand-visualization.html"><i class="fa fa-check"></i><b>5</b> The Grand Visualization</a>
 <ul>
 <li class="chapter" data-level="5.1" data-path="the-grand-visualization.html"><a href="the-grand-visualization.html#omit-some-noise-points-for-more-cluster-clarity"><i class="fa fa-check"></i><b>5.1</b> Omit some noise points for more cluster clarity</a></li>
@@ -160,9 +157,10 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <ul>
 <li class="chapter" data-level="6.1" data-path="cluster-refinement.html"><a href="cluster-refinement.html#refinement-idea-1-clustering-the-centroids"><i class="fa fa-check"></i><b>6.1</b> Refinement Idea 1: Clustering the centroids</a>
 <ul>
-<li class="chapter" data-level="" data-path="cluster-refinement.html"><a href="cluster-refinement.html#grand-visualization-of-refined-clusters"><i class="fa fa-check"></i>Grand Visualization of Refined Clusters</a></li>
+<li class="chapter" data-level="" data-path="cluster-refinement.html"><a href="cluster-refinement.html#topic-keywords-for-clusters"><i class="fa fa-check"></i>Topic Keywords for Clusters</a></li>
+<li class="chapter" data-level="" data-path="cluster-refinement.html"><a href="cluster-refinement.html#cluster-summarization"><i class="fa fa-check"></i>Cluster Summarization</a></li>
+<li class="chapter" data-level="" data-path="cluster-refinement.html"><a href="cluster-refinement.html#visualization-of-refined-clusters"><i class="fa fa-check"></i>Visualization of Refined Clusters</a></li>
 </ul></li>
-<li class="chapter" data-level="6.2" data-path="cluster-refinement.html"><a href="cluster-refinement.html#refinement-idea-2-divide-and-conquer"><i class="fa fa-check"></i><b>6.2</b> Refinement Idea 2: Divide and Conquer</a></li>
 </ul></li>
 <li class="divider"></li>
 <li><a href="https://github.com/rstudio/bookdown" target="blank">Published with bookdown</a></li>
@@ -191,40 +189,18 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <li>Getting a manageable number of clusters is unlikely to be helpful. A cluster like “data reports” might contain earnings releases, foreign debt reports, government employment reports etc - broad topics provide no specificity overall.</li>
 <li>Getting a thousand clusters with no idea of how those clusters are similar to each other is also unhelpful. In this situation, topics are just overly specific islands.</li>
 <li>Ideally we want many specific clusters that cluster together into larger topics. Like the “data reports” example given earlier: if we could have all of the <em>subtopics</em> (earnings reports, foreign debt reports, government employment reports etc) and know they fall into that broader category of “data reports”, then we’ve found a nice organization of the corpus. HDBSCAN is a typically a good tool for this task.</li>
+<li>Result of clustering the UMAP projection was nicer than clustering in the SVD space and clustering in the GloVe space.</li>
 </ol>
 <hr />
 <p>To get clusters, we consider just 2 options here - can cluster this UMAP projection or can opt to cluster some higher-dimensional projection (like the singular vectors themselves) and see how that looks in the UMAP Space. UMAP clustering seems to perform <em>really</em> well, even better than singular vector input, so we stick with it. We define <code>n</code> as the number of documents and <code>k</code> as the number of clusters.</p>
 <p>Hierarchical DBSCAN is a fast algorithm that adapts the ideas of single linkage clustering (minimal spanning trees) to <a href="https://en.wikipedia.org/wiki/DBSCAN">DBSCAN</a> (density based spatial clustering of applications with noise) to create a hierarchical map of density based clusters.</p>
-<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="clustering-hdbscan.html#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="co"># ## clus = hdbscan(svd$v[,1:25],10)</span></span>
-<span id="cb10-2"><a href="clustering-hdbscan.html#cb10-2" aria-hidden="true" tabindex="-1"></a><span class="co"># ## save(clus,file=&#39;hdbscan_clusters10.RData&#39;)</span></span>
-<span id="cb10-3"><a href="clustering-hdbscan.html#cb10-3" aria-hidden="true" tabindex="-1"></a><span class="co"># ## load(&#39;hdbscan_clusters10.RData&#39;)</span></span>
-<span id="cb10-4"><a href="clustering-hdbscan.html#cb10-4" aria-hidden="true" tabindex="-1"></a><span class="co"># clus = hdbscan(svd_ump,5)</span></span>
-<span id="cb10-5"><a href="clustering-hdbscan.html#cb10-5" aria-hidden="true" tabindex="-1"></a><span class="co"># save(clus,file=&#39;alldocs_hdbscan_of_map5.RData&#39;)</span></span>
-<span id="cb10-6"><a href="clustering-hdbscan.html#cb10-6" aria-hidden="true" tabindex="-1"></a><span class="fu">load</span>(<span class="st">&#39;docs/final_data_plots/alldocs_hdbscan_of_map5.RData&#39;</span>)</span>
-<span id="cb10-7"><a href="clustering-hdbscan.html#cb10-7" aria-hidden="true" tabindex="-1"></a>n<span class="ot">=</span><span class="fu">length</span>(clus<span class="sc">$</span>cluster)</span>
-<span id="cb10-8"><a href="clustering-hdbscan.html#cb10-8" aria-hidden="true" tabindex="-1"></a>(<span class="at">k =</span> <span class="fu">length</span>(clus<span class="sc">$</span>cluster_scores))</span></code></pre></div>
-<pre><code>## [1] 772</code></pre>
+<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="clustering-hdbscan.html#cb10-1" aria-hidden="true" tabindex="-1"></a> <span class="co"># clus = hdbscan(svd_ump,6)</span></span>
+<span id="cb10-2"><a href="clustering-hdbscan.html#cb10-2" aria-hidden="true" tabindex="-1"></a><span class="co"># save(clus,file=&#39;docs/final_data_plots/alldocs_hdbscan_of_map6.RData&#39;)</span></span>
+<span id="cb10-3"><a href="clustering-hdbscan.html#cb10-3" aria-hidden="true" tabindex="-1"></a><span class="fu">load</span>(<span class="st">&#39;docs/final_data_plots/alldocs_hdbscan_of_map6.RData&#39;</span>)</span>
+<span id="cb10-4"><a href="clustering-hdbscan.html#cb10-4" aria-hidden="true" tabindex="-1"></a>n<span class="ot">=</span><span class="fu">length</span>(clus<span class="sc">$</span>cluster)</span>
+<span id="cb10-5"><a href="clustering-hdbscan.html#cb10-5" aria-hidden="true" tabindex="-1"></a>(<span class="at">k =</span> <span class="fu">length</span>(clus<span class="sc">$</span>cluster_scores))</span></code></pre></div>
+<pre><code>## [1] 590</code></pre>
 <p>We get a LOT of clusters from <code>hdbscan</code> - this makes sense, there is a lot going on in this corpus! But it might be nice to refine those clusters so that we can see which ones are related. We’ll get to that after we explore this great visualization.</p>
-<div id="prepare-top-words-cluster-documents" class="section level2" number="4.1">
-<h2><span class="header-section-number">4.1</span> Prepare top words, Cluster documents</h2>
-<p>Get top words for further visualization and pile all documents in a cluster into one giant document for the purposes of summarization.</p>
-<div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb12-1"><a href="clustering-hdbscan.html#cb12-1" aria-hidden="true" tabindex="-1"></a>top.words<span class="ot">=</span><span class="fu">list</span>()</span>
-<span id="cb12-2"><a href="clustering-hdbscan.html#cb12-2" aria-hidden="true" tabindex="-1"></a>cluster.docs <span class="ot">=</span> <span class="fu">vector</span>()</span>
-<span id="cb12-3"><a href="clustering-hdbscan.html#cb12-3" aria-hidden="true" tabindex="-1"></a>centroids <span class="ot">=</span> <span class="fu">matrix</span>(<span class="cn">NA</span>,k,<span class="dv">2</span>)</span>
-<span id="cb12-4"><a href="clustering-hdbscan.html#cb12-4" aria-hidden="true" tabindex="-1"></a>mem<span class="ot">=</span><span class="fu">matrix</span>(<span class="cn">NA</span>,<span class="at">nrow=</span>n,<span class="at">ncol=</span>k)</span>
-<span id="cb12-5"><a href="clustering-hdbscan.html#cb12-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb12-6"><a href="clustering-hdbscan.html#cb12-6" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span>(i <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span>k){</span>
-<span id="cb12-7"><a href="clustering-hdbscan.html#cb12-7" aria-hidden="true" tabindex="-1"></a>  mem[,i] <span class="ot">=</span> clus<span class="sc">$</span>cluster <span class="sc">==</span>i</span>
-<span id="cb12-8"><a href="clustering-hdbscan.html#cb12-8" aria-hidden="true" tabindex="-1"></a>  tdmi <span class="ot">=</span> tdm[,mem[,i]]</span>
-<span id="cb12-9"><a href="clustering-hdbscan.html#cb12-9" aria-hidden="true" tabindex="-1"></a>  rs <span class="ot">=</span> <span class="fu">row_sums</span>(tdmi)</span>
-<span id="cb12-10"><a href="clustering-hdbscan.html#cb12-10" aria-hidden="true" tabindex="-1"></a>  top.words[[i]] <span class="ot">=</span> <span class="fu">names</span>(rs[<span class="fu">order</span>(rs,<span class="at">decreasing=</span>T)])[<span class="dv">1</span><span class="sc">:</span><span class="dv">10</span>]</span>
-<span id="cb12-11"><a href="clustering-hdbscan.html#cb12-11" aria-hidden="true" tabindex="-1"></a>  cluster.docs[i] <span class="ot">=</span> <span class="fu">paste</span>(raw_text[clus<span class="sc">$</span>cluster <span class="sc">==</span>i], <span class="at">sep=</span><span class="st">&#39;&#39;</span>, <span class="at">collapse=</span><span class="st">&#39; &#39;</span>)</span>
-<span id="cb12-12"><a href="clustering-hdbscan.html#cb12-12" aria-hidden="true" tabindex="-1"></a>  centroids[i,]<span class="ot">=</span><span class="fu">colMeans</span>(svd_ump[clus<span class="sc">$</span>cluster <span class="sc">==</span>i,])</span>
-<span id="cb12-13"><a href="clustering-hdbscan.html#cb12-13" aria-hidden="true" tabindex="-1"></a>}</span>
-<span id="cb12-14"><a href="clustering-hdbscan.html#cb12-14" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb12-15"><a href="clustering-hdbscan.html#cb12-15" aria-hidden="true" tabindex="-1"></a>displayWords<span class="ot">=</span><span class="fu">vector</span>()</span>
-<span id="cb12-16"><a href="clustering-hdbscan.html#cb12-16" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span>(i <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span>k){displayWords[i] <span class="ot">=</span> <span class="fu">paste</span>(top.words[[i]][<span class="dv">1</span><span class="sc">:</span><span class="dv">7</span>] , <span class="at">sep=</span><span class="st">&#39; &#39;</span>, <span class="at">collapse=</span><span class="st">&#39;&lt;br&gt;&#39;</span>)}</span></code></pre></div>
-</div>
 </div>
             </section>
 

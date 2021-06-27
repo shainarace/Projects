@@ -148,10 +148,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 </ul></li>
 </ul></li>
 <li class="chapter" data-level="3" data-path="umap.html"><a href="umap.html"><i class="fa fa-check"></i><b>3</b> UMAP</a></li>
-<li class="chapter" data-level="4" data-path="clustering-hdbscan.html"><a href="clustering-hdbscan.html"><i class="fa fa-check"></i><b>4</b> Clustering: HDBSCAN</a>
-<ul>
-<li class="chapter" data-level="4.1" data-path="clustering-hdbscan.html"><a href="clustering-hdbscan.html#prepare-top-words-cluster-documents"><i class="fa fa-check"></i><b>4.1</b> Prepare top words, Cluster documents</a></li>
-</ul></li>
+<li class="chapter" data-level="4" data-path="clustering-hdbscan.html"><a href="clustering-hdbscan.html"><i class="fa fa-check"></i><b>4</b> Clustering: HDBSCAN</a></li>
 <li class="chapter" data-level="5" data-path="the-grand-visualization.html"><a href="the-grand-visualization.html"><i class="fa fa-check"></i><b>5</b> The Grand Visualization</a>
 <ul>
 <li class="chapter" data-level="5.1" data-path="the-grand-visualization.html"><a href="the-grand-visualization.html#omit-some-noise-points-for-more-cluster-clarity"><i class="fa fa-check"></i><b>5.1</b> Omit some noise points for more cluster clarity</a></li>
@@ -160,9 +157,10 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <ul>
 <li class="chapter" data-level="6.1" data-path="cluster-refinement.html"><a href="cluster-refinement.html#refinement-idea-1-clustering-the-centroids"><i class="fa fa-check"></i><b>6.1</b> Refinement Idea 1: Clustering the centroids</a>
 <ul>
-<li class="chapter" data-level="" data-path="cluster-refinement.html"><a href="cluster-refinement.html#grand-visualization-of-refined-clusters"><i class="fa fa-check"></i>Grand Visualization of Refined Clusters</a></li>
+<li class="chapter" data-level="" data-path="cluster-refinement.html"><a href="cluster-refinement.html#topic-keywords-for-clusters"><i class="fa fa-check"></i>Topic Keywords for Clusters</a></li>
+<li class="chapter" data-level="" data-path="cluster-refinement.html"><a href="cluster-refinement.html#cluster-summarization"><i class="fa fa-check"></i>Cluster Summarization</a></li>
+<li class="chapter" data-level="" data-path="cluster-refinement.html"><a href="cluster-refinement.html#visualization-of-refined-clusters"><i class="fa fa-check"></i>Visualization of Refined Clusters</a></li>
 </ul></li>
-<li class="chapter" data-level="6.2" data-path="cluster-refinement.html"><a href="cluster-refinement.html#refinement-idea-2-divide-and-conquer"><i class="fa fa-check"></i><b>6.2</b> Refinement Idea 2: Divide and Conquer</a></li>
 </ul></li>
 <li class="divider"></li>
 <li><a href="https://github.com/rstudio/bookdown" target="blank">Published with bookdown</a></li>
@@ -194,8 +192,8 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 </ol>
 <hr />
 <p>We’ll use the mathemagical <a href="https://umap-learn.readthedocs.io/en/latest/">Uniform Manifold Approximation and Projection (UMAP)</a> algorithm to project the already dimension-reduced data (150 singular vectors) into 2-space. UMAP is a dimension reduction technique that builds on the notion neighbor graphs with ideas from topology. It is similar to t-SNE in its approach, but the fundamentals are based on firmer (and more complicated) mathematical theory (manifolds/topology).</p>
-<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="umap.html#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="co"># svd_ump = umap(svd$v)</span></span>
-<span id="cb9-2"><a href="umap.html#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="co"># save(svd_ump, file=&#39;docs/final_data_plots/svd_ump.RData&#39;)</span></span>
+<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="umap.html#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="co">#svd_ump = umap(svd$v[,1:150])</span></span>
+<span id="cb9-2"><a href="umap.html#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="co">#save(svd_ump, file=&#39;docs/final_data_plots/svd_ump.RData&#39;)</span></span>
 <span id="cb9-3"><a href="umap.html#cb9-3" aria-hidden="true" tabindex="-1"></a><span class="fu">load</span>(<span class="st">&#39;docs/final_data_plots/svd_ump.RData&#39;</span>)</span>
 <span id="cb9-4"><a href="umap.html#cb9-4" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb9-5"><a href="umap.html#cb9-5" aria-hidden="true" tabindex="-1"></a>fig <span class="ot">&lt;-</span> <span class="fu">plot_ly</span>(<span class="at">type =</span> <span class="st">&#39;scatter&#39;</span>, <span class="at">mode =</span> <span class="st">&#39;markers&#39;</span>)</span>
@@ -208,8 +206,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <span id="cb9-12"><a href="umap.html#cb9-12" aria-hidden="true" tabindex="-1"></a>    <span class="at">marker =</span> <span class="fu">list</span>(<span class="at">color=</span><span class="st">&#39;green&#39;</span>, <span class="at">opacity=</span><span class="fl">0.6</span>),</span>
 <span id="cb9-13"><a href="umap.html#cb9-13" aria-hidden="true" tabindex="-1"></a>    <span class="at">showlegend =</span> F</span>
 <span id="cb9-14"><a href="umap.html#cb9-14" aria-hidden="true" tabindex="-1"></a>  )</span>
-<span id="cb9-15"><a href="umap.html#cb9-15" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-16"><a href="umap.html#cb9-16" aria-hidden="true" tabindex="-1"></a><span class="co">#saveWidget(fig, &quot;docs/UMAP_noClusters.html&quot;)</span></span></code></pre></div>
+<span id="cb9-15"><a href="umap.html#cb9-15" aria-hidden="true" tabindex="-1"></a><span class="co"># saveWidget(fig, &quot;docs/UMAP_noClusters.html&quot;)</span></span></code></pre></div>
 <p><a href="https://shainarace.github.io/Reuters/UMAP_noClusters.html">Full Page Visualization</a></p>
 </div>
             </section>

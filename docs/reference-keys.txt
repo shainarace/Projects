@@ -4,9 +4,7 @@ term-frequencies
 via-svd
 umap
 clustering-hdbscan
-prepare-top-words-cluster-documents
 the-grand-visualization
 omit-some-noise-points-for-more-cluster-clarity
 cluster-refinement
 refinement-idea-1-clustering-the-centroids
-refinement-idea-2-divide-and-conquer

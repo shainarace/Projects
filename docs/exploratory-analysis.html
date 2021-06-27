@@ -148,10 +148,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 </ul></li>
 </ul></li>
 <li class="chapter" data-level="3" data-path="umap.html"><a href="umap.html"><i class="fa fa-check"></i><b>3</b> UMAP</a></li>
-<li class="chapter" data-level="4" data-path="clustering-hdbscan.html"><a href="clustering-hdbscan.html"><i class="fa fa-check"></i><b>4</b> Clustering: HDBSCAN</a>
-<ul>
-<li class="chapter" data-level="4.1" data-path="clustering-hdbscan.html"><a href="clustering-hdbscan.html#prepare-top-words-cluster-documents"><i class="fa fa-check"></i><b>4.1</b> Prepare top words, Cluster documents</a></li>
-</ul></li>
+<li class="chapter" data-level="4" data-path="clustering-hdbscan.html"><a href="clustering-hdbscan.html"><i class="fa fa-check"></i><b>4</b> Clustering: HDBSCAN</a></li>
 <li class="chapter" data-level="5" data-path="the-grand-visualization.html"><a href="the-grand-visualization.html"><i class="fa fa-check"></i><b>5</b> The Grand Visualization</a>
 <ul>
 <li class="chapter" data-level="5.1" data-path="the-grand-visualization.html"><a href="the-grand-visualization.html#omit-some-noise-points-for-more-cluster-clarity"><i class="fa fa-check"></i><b>5.1</b> Omit some noise points for more cluster clarity</a></li>
@@ -160,9 +157,10 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <ul>
 <li class="chapter" data-level="6.1" data-path="cluster-refinement.html"><a href="cluster-refinement.html#refinement-idea-1-clustering-the-centroids"><i class="fa fa-check"></i><b>6.1</b> Refinement Idea 1: Clustering the centroids</a>
 <ul>
-<li class="chapter" data-level="" data-path="cluster-refinement.html"><a href="cluster-refinement.html#grand-visualization-of-refined-clusters"><i class="fa fa-check"></i>Grand Visualization of Refined Clusters</a></li>
+<li class="chapter" data-level="" data-path="cluster-refinement.html"><a href="cluster-refinement.html#topic-keywords-for-clusters"><i class="fa fa-check"></i>Topic Keywords for Clusters</a></li>
+<li class="chapter" data-level="" data-path="cluster-refinement.html"><a href="cluster-refinement.html#cluster-summarization"><i class="fa fa-check"></i>Cluster Summarization</a></li>
+<li class="chapter" data-level="" data-path="cluster-refinement.html"><a href="cluster-refinement.html#visualization-of-refined-clusters"><i class="fa fa-check"></i>Visualization of Refined Clusters</a></li>
 </ul></li>
-<li class="chapter" data-level="6.2" data-path="cluster-refinement.html"><a href="cluster-refinement.html#refinement-idea-2-divide-and-conquer"><i class="fa fa-check"></i><b>6.2</b> Refinement Idea 2: Divide and Conquer</a></li>
 </ul></li>
 <li class="divider"></li>
 <li><a href="https://github.com/rstudio/bookdown" target="blank">Published with bookdown</a></li>
@@ -243,11 +241,11 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <div id="screeplot" class="section level3 unnumbered">
 <h3>Screeplot</h3>
 <div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="exploratory-analysis.html#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="co"># tfidf_tdm = weightTfIdf(tdm, normalize=T)</span></span>
-<span id="cb7-2"><a href="exploratory-analysis.html#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="co"># MUST NORMALIZE THOSE DOCUMENT LENGTHS!!</span></span>
+<span id="cb7-2"><a href="exploratory-analysis.html#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="co"># # # MUST NORMALIZE THOSE DOCUMENT LENGTHS!!</span></span>
 <span id="cb7-3"><a href="exploratory-analysis.html#cb7-3" aria-hidden="true" tabindex="-1"></a><span class="co"># tfidf_tdm = apply(tfidf_tdm, 2, function(x){x/c(sqrt(t(x)%*%x))})</span></span>
 <span id="cb7-4"><a href="exploratory-analysis.html#cb7-4" aria-hidden="true" tabindex="-1"></a><span class="co"># tfidf_tdm &lt;- as(tfidf_tdm, &quot;sparseMatrix&quot;)</span></span>
 <span id="cb7-5"><a href="exploratory-analysis.html#cb7-5" aria-hidden="true" tabindex="-1"></a><span class="co"># svd = irlba(tfidf_tdm, 150)</span></span>
-<span id="cb7-6"><a href="exploratory-analysis.html#cb7-6" aria-hidden="true" tabindex="-1"></a><span class="co">#save(svd,file=&#39;docs/final_data_plots/svd.RData&#39;)</span></span>
+<span id="cb7-6"><a href="exploratory-analysis.html#cb7-6" aria-hidden="true" tabindex="-1"></a><span class="co"># save(svd,tfidf_tdm,file=&#39;docs/final_data_plots/svd.RData&#39;)</span></span>
 <span id="cb7-7"><a href="exploratory-analysis.html#cb7-7" aria-hidden="true" tabindex="-1"></a><span class="fu">load</span>(<span class="st">&#39;docs/final_data_plots/svd.RData&#39;</span>)</span>
 <span id="cb7-8"><a href="exploratory-analysis.html#cb7-8" aria-hidden="true" tabindex="-1"></a>df <span class="ot">=</span> <span class="fu">data.frame</span>(<span class="at">x=</span><span class="dv">1</span><span class="sc">:</span><span class="dv">150</span>,<span class="at">d=</span>svd<span class="sc">$</span>d)</span>
 <span id="cb7-9"><a href="exploratory-analysis.html#cb7-9" aria-hidden="true" tabindex="-1"></a>g1 <span class="ot">=</span> <span class="fu">ggplot</span>(<span class="at">data=</span>df, <span class="fu">aes</span>(<span class="at">x=</span>x, <span class="at">y=</span>d, <span class="at">group=</span><span class="dv">1</span>)) <span class="sc">+</span></span>
@@ -275,7 +273,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <span id="cb8-9"><a href="exploratory-analysis.html#cb8-9" aria-hidden="true" tabindex="-1"></a>    <span class="at">showlegend =</span> F</span>
 <span id="cb8-10"><a href="exploratory-analysis.html#cb8-10" aria-hidden="true" tabindex="-1"></a>  )</span>
 <span id="cb8-11"><a href="exploratory-analysis.html#cb8-11" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-12"><a href="exploratory-analysis.html#cb8-12" aria-hidden="true" tabindex="-1"></a><span class="co">#saveWidget(fig,file=&#39;docs/svd_projection.html&#39;)</span></span></code></pre></div>
+<span id="cb8-12"><a href="exploratory-analysis.html#cb8-12" aria-hidden="true" tabindex="-1"></a><span class="co"># saveWidget(fig,file=&#39;docs/svd_projection.html&#39;)</span></span></code></pre></div>
 <p><a href="https://shainarace.github.io/Reuters/svd_projection.html">Full Page Visualization</a></p>
 </div>
 </div>

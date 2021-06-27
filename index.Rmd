@@ -51,7 +51,7 @@ library(tidytext)
 library(dbscan)
 library(ggplot2)
 library(irlba)
-library(umap)
+library(uwot)
 library(slam)
 library(text2vec)
 #library(tm.corpus.Reuters21578)
@@ -73,8 +73,8 @@ library(tsne)
 
 ```{r message=F, warning=F}
 #setwd('/Users/shaina/Library/Mobile Documents/com~apple~Clouddocs/final_data_plots/Datasets and Code/reuters21578/')
-
-# PATH = '/Users/shaina/Library/Mobile Documents/com~apple~Clouddocs/final_data_plots/Datasets and Code/reuters21578/Files/'
+# 
+# PATH = '/Users/shaina/Library/Mobile Documents/com~apple~Clouddocs/Datasets and Code/reuters21578/Files/'
 # filenames=dir_ls(PATH)
 # datetime=vector()
 # text = vector()
@@ -111,10 +111,10 @@ library(tsne)
 # datetime = as.POSIXct(datetime,format = '%d-%b-%Y %H:%M:%S')
 # lewissplit[lewissplit=='TRAI']='train'
 # lewissplit[lewissplit=='TEST']='test'
-# 
-# ############################################################################
-# # Now I can pull out the heading...
-# ############################################################################
+# #
+# # ############################################################################
+# # # Now I can pull out the heading...
+# # ############################################################################
 # title_idx = str_locate_all(pattern='<TITLE>',text)
 # head=vector()
 # for(i in 1:(length(text))){
@@ -124,10 +124,10 @@ library(tsne)
 #       head[i]=substr(text[i], title_idx[[i]][1,2]+1,title_idx[[i]][2,1]-1)
 #     }
 # }
-# head=gsub('&lt;','<',head)
-# ############################################################################
-# # ...and the raw article text. 
-# ############################################################################
+# head=gsub('&lt;','<',head, fixed=T)
+# # ############################################################################
+# # # ...and the raw article text.
+# # ############################################################################
 # body_idx = str_locate_all(pattern='<BODY>',text)
 # body=vector()
 # for(i in 1:(length(text))){
@@ -137,10 +137,15 @@ library(tsne)
 #       body[i]=substr(text[i], body_idx[[i]][1,2]+1,body_idx[[i]][2,1]-1)
 #     }
 # }
-# text=body
-# Reuters <- Corpus(VectorSource(text))
-# save(text,head,Reuters,lewissplit,datetime,file='RawDataRead.RData')
-# load('docs/final_data_plots/RawDataRead.RData')
+# # Clean up Briefs
+# body = gsub("TYPE=\"BRIEF\">&#2; ******<TITLE>",'',body, fixed=T)
+# body = gsub("<TITLE>Blah blah blah. &#3;", '',body, fixed=T)
+# 
+# 
+#  text=body
+#  Reuters <- Corpus(VectorSource(text))
+# save(text,head,Reuters,lewissplit,datetime,file='docs/final_data_plots/RawDataRead.RData')
+ load('docs/final_data_plots/RawDataRead.RData')
 ```
 
 
@@ -189,10 +194,10 @@ library(tsne)
 # # add breaks for text wrapping
 # #############################################################
 # raw_text = gsub("(.{60,}?)\\s", "\\1<br>", raw_text)
-# ############################################################
-# Save data to avoid repeat processing
-# ############################################################
-#save(raw_text,head,lewissplit,tdm,R,datetime, file='processedV2.RData')
+# # ############################################################
+# # Save data to avoid repeat processing
+# # ############################################################
+# save(raw_text,head,lewissplit,tdm,R,datetime, file='docs/final_data_plots/processedV2.RData')
 load('docs/final_data_plots/processedV2.RData')
 ```
 
@@ -263,11 +268,11 @@ Try to get an idea of the meaningful dimensionality of the data with a screeplot
 
 ```{r message=F, warning=F}
 # tfidf_tdm = weightTfIdf(tdm, normalize=T)
-# MUST NORMALIZE THOSE DOCUMENT LENGTHS!!
+# # # MUST NORMALIZE THOSE DOCUMENT LENGTHS!!
 # tfidf_tdm = apply(tfidf_tdm, 2, function(x){x/c(sqrt(t(x)%*%x))})
 # tfidf_tdm <- as(tfidf_tdm, "sparseMatrix")
 # svd = irlba(tfidf_tdm, 150)
-#save(svd,file='docs/final_data_plots/svd.RData')
+# save(svd,tfidf_tdm,file='docs/final_data_plots/svd.RData')
 load('docs/final_data_plots/svd.RData')
 df = data.frame(x=1:150,d=svd$d)
 g1 = ggplot(data=df, aes(x=x, y=d, group=1)) +
@@ -297,7 +302,7 @@ fig <- fig %>%
     showlegend = F
   )
 
-#saveWidget(fig,file='docs/svd_projection.html')
+# saveWidget(fig,file='docs/svd_projection.html')
 ```     
 
 
@@ -317,8 +322,8 @@ Key Takeaways:
 We'll use the mathemagical [Uniform Manifold Approximation and Projection (UMAP)](https://umap-learn.readthedocs.io/en/latest/) algorithm to project the already dimension-reduced data (150 singular vectors) into 2-space. UMAP is a dimension reduction technique that builds on the notion neighbor graphs with ideas from topology. It is similar to t-SNE in its approach, but the fundamentals are based on firmer (and more complicated) mathematical theory (manifolds/topology).  
 
 ```{r message=F, warning=F}
-# svd_ump = umap(svd$v)
-# save(svd_ump, file='docs/final_data_plots/svd_ump.RData')
+#svd_ump = umap(svd$v[,1:150])
+#save(svd_ump, file='docs/final_data_plots/svd_ump.RData')
 load('docs/final_data_plots/svd_ump.RData')
 
 fig <- plot_ly(type = 'scatter', mode = 'markers')
@@ -331,8 +336,7 @@ fig <- fig %>%
     marker = list(color='green', opacity=0.6),
     showlegend = F
   )
-
-#saveWidget(fig, "docs/UMAP_noClusters.html")
+# saveWidget(fig, "docs/UMAP_noClusters.html")
 ```
 
 
@@ -347,6 +351,7 @@ Key Takeaways:
 2. Getting a manageable number of clusters is unlikely to be helpful. A cluster like "data reports" might contain earnings releases, foreign debt reports, government employment reports etc - broad topics provide no specificity overall. 
 3. Getting a thousand clusters with no idea of how those clusters are similar to each other is also unhelpful. In this situation, topics are just overly specific islands.
 4. Ideally we want many specific clusters that cluster together into larger topics. Like the "data reports" example given earlier: if we could have all of the _subtopics_ (earnings reports, foreign debt reports, government employment reports etc) and know they fall into that broader category of "data reports", then we've found a nice organization of the corpus. HDBSCAN is a typically a good tool for this task. 
+5. Result of clustering the UMAP projection was nicer than clustering in the SVD space and clustering in the GloVe space.
 
 ---
 
@@ -355,40 +360,14 @@ To get clusters, we consider just 2 options here - can cluster this UMAP project
 Hierarchical DBSCAN is a fast algorithm that adapts the ideas of single linkage clustering (minimal spanning trees) to [DBSCAN](https://en.wikipedia.org/wiki/DBSCAN) (density based spatial clustering of applications with noise) to create a hierarchical map of density based clusters. 
 
 ```{r message=F, warning=F}
-# ## clus = hdbscan(svd$v[,1:25],10)
-# ## save(clus,file='hdbscan_clusters10.RData')
-# ## load('hdbscan_clusters10.RData')
-# clus = hdbscan(svd_ump,5)
-# save(clus,file='alldocs_hdbscan_of_map5.RData')
-load('docs/final_data_plots/alldocs_hdbscan_of_map5.RData')
+ # clus = hdbscan(svd_ump,6)
+# save(clus,file='docs/final_data_plots/alldocs_hdbscan_of_map6.RData')
+load('docs/final_data_plots/alldocs_hdbscan_of_map6.RData')
 n=length(clus$cluster)
 (k = length(clus$cluster_scores))
 ```
 
 We get a LOT of clusters from `hdbscan` - this makes sense, there is a lot going on in this corpus! But it might be nice to refine those clusters so that we can see which ones are related. We'll get to that after we explore this great visualization. 
-
-## Prepare top words, Cluster documents
-
-Get top words for further visualization and pile all documents in a cluster into one giant document for the purposes of summarization.
-
-```{r message=F, warning=F}
-top.words=list()
-cluster.docs = vector()
-centroids = matrix(NA,k,2)
-mem=matrix(NA,nrow=n,ncol=k)
-
-for(i in 1:k){
-  mem[,i] = clus$cluster ==i
-  tdmi = tdm[,mem[,i]]
-  rs = row_sums(tdmi)
-  top.words[[i]] = names(rs[order(rs,decreasing=T)])[1:10]
-  cluster.docs[i] = paste(raw_text[clus$cluster ==i], sep='', collapse=' ')
-  centroids[i,]=colMeans(svd_ump[clus$cluster ==i,])
-}
-
-displayWords=vector()
-for(i in 1:k){displayWords[i] = paste(top.words[[i]][1:7] , sep=' ', collapse='<br>')}
-```
 
 # The Grand Visualization
 
@@ -409,7 +388,7 @@ fig <- fig %>%
     showlegend = F
   )
 
-#saveWidget(fig, "docs/All_clusters_noTopics_UMAPClus_wNoise.html")
+# saveWidget(fig, "docs/All_clusters_noTopics_UMAPClus_wNoise.html")
 ```
 
 [Full Page Visualization](https://shainarace.github.io/Reuters/All_clusters_noTopics_UMAPClus_wNoise.html)
@@ -434,11 +413,11 @@ fig <- fig %>%
     y = data_subset[,2],
     text = ~paste('Heading:', head_subset ,"<br>Text: ", raw_text_subset ,"<br>Cluster Number: ", clusters),
     hoverinfo = 'text',
-    markers = list(opacity=0.6),
     color = clusters,
+    marker = list(opacity=0.6),
     showlegend = F
   )
-#saveWidget(fig, "docs/All_clusters_noTopics_UMAPClus.html")
+# saveWidget(fig, "docs/All_clusters_noTopics_UMAPClus.html")
 
 ```
 
@@ -447,33 +426,102 @@ fig <- fig %>%
 
 # Cluster Refinement
 
-Problems with our initial clustering: \
-1. Many medium-big clusters get broken up even though they seem nicely separated on the UMAP projection. \
-2. The big center blob is begging to be dealt with a bit better.\ 
+Problem with our initial clustering: Many medium-big clusters get broken up even though they seem nicely separated on the UMAP projection. \
 
-Three ideas for potential refinement:\
+Two ideas for potential refinement:\
 1. Run the clustering again on centroids of clusters\
-2. Focus on the blob and see if treating it separately helps - potentially less information overall to squeeze into the viz, allowing for more separation - divide and conquer. \
-3. __Take all the existing clusters as single documents (i.e. paste all documents in a cluster together into single document for each cluster) -- repeat this process.__ I think this is a nice idea but I don't believe I'll have time to play with it. \
+2. __Take all the existing clusters as single documents (i.e. paste all documents in a cluster together into single document for each cluster) -- repeat this process.__ I think this is a nice idea but I don't believe I'll have time to play with it. \
 
 The first idea is easier so we'll start there:
 
 ## Refinement Idea 1: Clustering the centroids
 
+### Topic Keywords for Clusters {-}
+
+Get top words for further visualization and pile all documents in a cluster into one giant document for the purposes of summarization.
+
+```{r message=F, warning=F}
+top.words=list()
+cluster.docs = vector()
+centroids = matrix(NA,k,2)
+mem=matrix(NA,nrow=n,ncol=k)
+
+for(i in 1:k){
+  mem[,i] = clus$cluster ==i
+  tdmi = tfidf_tdm[,mem[,i]]
+  rs = row_sums(tdmi)
+  top.words[[i]] = names(rs[order(rs,decreasing=T)])[1:10]
+  cluster.docs[i] = paste(raw_text[clus$cluster ==i], sep='', collapse=' ')
+  centroids[i,]=colMeans(svd_ump[clus$cluster ==i,])
+}
+
+displayWords=vector()
+for(i in 1:k){displayWords[i] = paste(top.words[[i]][1:7] , sep=' ', collapse='<br>')}
+```
+
+### Cluster Summarization {-}
+
+To qualitatively evaluate our meta-clustering via centroids on the visualization, we'll create some naive cluster summaries to display in the plot using the eigenvector centralities of the graph induced by cosine similarity between sentences in the clusters. 
+
+```{r message=F, warning=F}
+# SummarySentences=vector()
+# for(i in 1:k){
+# t=cluster.docs[i]
+# t = gsub("<br>", " ", t, fixed =T)
+# # Change alternative sentence-ending punctuation to '.'
+# t = gsub("\\?", ".", t)
+# t = gsub("\\!", ".", t)
+# # Split by sentence
+# t2 = strsplit(t, ".",fixed=TRUE)
+# corpus <- Corpus(VectorSource(as.data.frame(t2)[,1]))
+# # Remove stop words, numbers and stem
+# corpus = tm_map(corpus,removeWords,c(stopwords("en"),'reuter', 'dlrs', 'mln', 'said','will', 'year', 'compani','pct','corp'))
+# corpus = tm_map(corpus,removeNumbers)
+# corpus = tm_map(corpus,stemDocument)
+# ########################################################################
+# # Remove empty documents that appear after removal of stopwords and numbers
+# td1 = TermDocumentMatrix(corpus)
+# empty.cols = col_sums(td1)==0
+# td1 = td1[,!empty.cols]
+# raw=unlist(t2)[!empty.cols]
+# if(length(empty.cols)>0){corpus = corpus[!empty.cols]}
+# td = weightTfIdf(td1,normalize=T)
+# tdm_norm = apply(td, 2, function(x){x/c(sqrt(t(x)%*%x))})
+# tdm_norm = as(tdm_norm,"sparseMatrix")
+# # Cosine similarity
+# C=t(tdm_norm)%*%tdm_norm
+# # Remove self loops
+# C[C>0.9999999] = 0
+# g = graph_from_adjacency_matrix(C, weighted = T)
+# j=order(eigen_centrality(g)$vector,decreasing=T)
+# SummarySentences[i] = paste(raw[j[1:5]], sep= ' ',collapse='<br>')
+# }
+# save(SummarySentences, file='docs/final_data_plots/SummarySentences.RData')
+load('docs/final_data_plots/SummarySentences.RData')
+```
+
 
 ```{r message=F, warning=F, eval=F}
-# cen_clus = hdbscan(centroids, 3) # Down to 103 Clusters...Looks Pretty Good. 
+# cen_clus = hdbscan(centroids, 3) # Down to 81 Clusters...Looks Pretty Good. 
 # save(cen_clus,file='docs/final_data_plots/cen_clus.RData')
 load('docs/final_data_plots/cen_clus.RData')
+```
+
+
+
+
+
+```{r message=F, warning=F, eval=F}
 
 fig <- plot_ly(type = 'scatter', mode = 'markers')%>%
   add_trace(x = centroids[,1],
             y = centroids[,2],
-            text = ~paste('Key Words:', displayWords,"<br>Cluster Number: ", cen_clus$cluster ),
+            text = ~paste('Key Words:', displayWords,"<br>Cluster Number: ", cen_clus$cluster,
+                          "<br>Summary Sentences: ", SummarySentences),
             color=factor(cen_clus$cluster),
             marker=list( opacity=0.6),
             showlegend = FALSE)
-#saveWidget(fig, "docs/Centroid_Clus.html")
+saveWidget(fig, "docs/Centroid_Clus.html")
 
 ```
 
@@ -496,14 +544,13 @@ remapClusters = function(cen_clus,clus){
   }
   
 ```
-
-### Grand Visualization of Refined Clusters {-}
+ 
+### Visualization of Refined Clusters {-}
 
 
 ```{r message=F, warning=F, eval=F}
 
 newclusters = remapClusters(cen_clus, clus) 
-
 
 fig <- plot_ly(type = 'scatter', mode = 'markers')
 fig <- fig %>%
@@ -517,53 +564,9 @@ fig <- fig %>%
     showlegend = F
   )
 
-#saveWidget(fig, "docs/All_centroid_refined_clusters.html")
+# saveWidget(fig, "docs/All_centroid_refined_clusters.html")
 
 ```
 
 [Full Page Visualization](https://shainarace.github.io/Reuters/All_centroid_refined_clusters.html)
-
-
-Onto the next thought for refinement: divide and conquer.
-
-## Refinement Idea 2: Divide and Conquer
-
-Here, we divide the data according to UMAP and recompute the SVD of that subset. We see _some_ better cluster separation than we did in the corresponding rectangle on our original umap viz, but the end result still leaves a lot of room for improvement. 
-
-
-```{r message=F, warning=F, eval=F}
-# Take rectangular subset on the interval x=[-0.5,3] and y=[-1.5,1]
-index_subset2 = svd_ump[,1] <3 &svd_ump[,1] > -0.5 &  svd_ump[,2] <1&  svd_ump[,2] > -1.5
-tdm_subset = tdm[,index_subset2]
-tdm_subset = tdm_subset[row_sums(tdm_subset)!=0, ]
-tfidf_tdm_subset = weightTfIdf(tdm_subset, normalize=T)
-tfidf_tdm_subset = apply(tfidf_tdm_subset, 2, function(x){x/c(sqrt(t(x)%*%x))})
-tfidf_tdm_subset <- as(tfidf_tdm_subset, "sparseMatrix")
-
-# Take SVD of the subset and compute the UMAP 
-svd_subset = irlba(tfidf_tdm_subset,150)
-svd_subset_map = umap(svd_subset$v)
-# Subset raw text for visualization
-raw_text_subset2 = raw_text[index_subset2]
-head_subset2 = head[index_subset2]
-# Cluster
-clus2=hdbscan(svd_subset_map,4)
-
-fig2 <- plot_ly(type = 'scatter', mode = 'markers')
-fig2 <- fig2 %>%
-  add_trace(
-    x = svd_subset_map[,1],
-    y = svd_subset_map[,2],
-    text = ~paste('heading:', head_subset2 ,"<br>text: ", raw_text_subset2,"<br>Cluster Number: ", clus2$cluster ),
-    hoverinfo = 'text',
-    color=factor(clus2$cluster),
-    showlegend = F
-  )
-
-saveWidget(fig2, 'docs/SubsettingUMAPforRepeatSVD.html')
-
-
-```
-
-
-[Full Page Visualization](https://shainarace.github.io/Reuters/SubsettingUMAPforRepeatSVD.html)
+ 

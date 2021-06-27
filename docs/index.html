@@ -148,10 +148,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 </ul></li>
 </ul></li>
 <li class="chapter" data-level="3" data-path="umap.html"><a href="umap.html"><i class="fa fa-check"></i><b>3</b> UMAP</a></li>
-<li class="chapter" data-level="4" data-path="clustering-hdbscan.html"><a href="clustering-hdbscan.html"><i class="fa fa-check"></i><b>4</b> Clustering: HDBSCAN</a>
-<ul>
-<li class="chapter" data-level="4.1" data-path="clustering-hdbscan.html"><a href="clustering-hdbscan.html#prepare-top-words-cluster-documents"><i class="fa fa-check"></i><b>4.1</b> Prepare top words, Cluster documents</a></li>
-</ul></li>
+<li class="chapter" data-level="4" data-path="clustering-hdbscan.html"><a href="clustering-hdbscan.html"><i class="fa fa-check"></i><b>4</b> Clustering: HDBSCAN</a></li>
 <li class="chapter" data-level="5" data-path="the-grand-visualization.html"><a href="the-grand-visualization.html"><i class="fa fa-check"></i><b>5</b> The Grand Visualization</a>
 <ul>
 <li class="chapter" data-level="5.1" data-path="the-grand-visualization.html"><a href="the-grand-visualization.html#omit-some-noise-points-for-more-cluster-clarity"><i class="fa fa-check"></i><b>5.1</b> Omit some noise points for more cluster clarity</a></li>
@@ -160,9 +157,10 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <ul>
 <li class="chapter" data-level="6.1" data-path="cluster-refinement.html"><a href="cluster-refinement.html#refinement-idea-1-clustering-the-centroids"><i class="fa fa-check"></i><b>6.1</b> Refinement Idea 1: Clustering the centroids</a>
 <ul>
-<li class="chapter" data-level="" data-path="cluster-refinement.html"><a href="cluster-refinement.html#grand-visualization-of-refined-clusters"><i class="fa fa-check"></i>Grand Visualization of Refined Clusters</a></li>
+<li class="chapter" data-level="" data-path="cluster-refinement.html"><a href="cluster-refinement.html#topic-keywords-for-clusters"><i class="fa fa-check"></i>Topic Keywords for Clusters</a></li>
+<li class="chapter" data-level="" data-path="cluster-refinement.html"><a href="cluster-refinement.html#cluster-summarization"><i class="fa fa-check"></i>Cluster Summarization</a></li>
+<li class="chapter" data-level="" data-path="cluster-refinement.html"><a href="cluster-refinement.html#visualization-of-refined-clusters"><i class="fa fa-check"></i>Visualization of Refined Clusters</a></li>
 </ul></li>
-<li class="chapter" data-level="6.2" data-path="cluster-refinement.html"><a href="cluster-refinement.html#refinement-idea-2-divide-and-conquer"><i class="fa fa-check"></i><b>6.2</b> Refinement Idea 2: Divide and Conquer</a></li>
 </ul></li>
 <li class="divider"></li>
 <li><a href="https://github.com/rstudio/bookdown" target="blank">Published with bookdown</a></li>
@@ -228,7 +226,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <span id="cb1-27"><a href="index.html#cb1-27" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(dbscan)</span>
 <span id="cb1-28"><a href="index.html#cb1-28" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ggplot2)</span>
 <span id="cb1-29"><a href="index.html#cb1-29" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(irlba)</span>
-<span id="cb1-30"><a href="index.html#cb1-30" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(umap)</span>
+<span id="cb1-30"><a href="index.html#cb1-30" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(uwot)</span>
 <span id="cb1-31"><a href="index.html#cb1-31" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(slam)</span>
 <span id="cb1-32"><a href="index.html#cb1-32" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(text2vec)</span>
 <span id="cb1-33"><a href="index.html#cb1-33" aria-hidden="true" tabindex="-1"></a><span class="co">#library(tm.corpus.Reuters21578)</span></span>
@@ -247,8 +245,8 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <span id="cb1-46"><a href="index.html#cb1-46" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(fs)</span>
 <span id="cb1-47"><a href="index.html#cb1-47" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tsne)</span></code></pre></div>
 <div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="index.html#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co">#setwd(&#39;/Users/shaina/Library/Mobile Documents/com~apple~Clouddocs/final_data_plots/Datasets and Code/reuters21578/&#39;)</span></span>
-<span id="cb2-2"><a href="index.html#cb2-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-3"><a href="index.html#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="co"># PATH = &#39;/Users/shaina/Library/Mobile Documents/com~apple~Clouddocs/final_data_plots/Datasets and Code/reuters21578/Files/&#39;</span></span>
+<span id="cb2-2"><a href="index.html#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="co"># </span></span>
+<span id="cb2-3"><a href="index.html#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="co"># PATH = &#39;/Users/shaina/Library/Mobile Documents/com~apple~Clouddocs/Datasets and Code/reuters21578/Files/&#39;</span></span>
 <span id="cb2-4"><a href="index.html#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="co"># filenames=dir_ls(PATH)</span></span>
 <span id="cb2-5"><a href="index.html#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="co"># datetime=vector()</span></span>
 <span id="cb2-6"><a href="index.html#cb2-6" aria-hidden="true" tabindex="-1"></a><span class="co"># text = vector()</span></span>
@@ -285,10 +283,10 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <span id="cb2-37"><a href="index.html#cb2-37" aria-hidden="true" tabindex="-1"></a><span class="co"># datetime = as.POSIXct(datetime,format = &#39;%d-%b-%Y %H:%M:%S&#39;)</span></span>
 <span id="cb2-38"><a href="index.html#cb2-38" aria-hidden="true" tabindex="-1"></a><span class="co"># lewissplit[lewissplit==&#39;TRAI&#39;]=&#39;train&#39;</span></span>
 <span id="cb2-39"><a href="index.html#cb2-39" aria-hidden="true" tabindex="-1"></a><span class="co"># lewissplit[lewissplit==&#39;TEST&#39;]=&#39;test&#39;</span></span>
-<span id="cb2-40"><a href="index.html#cb2-40" aria-hidden="true" tabindex="-1"></a><span class="co"># </span></span>
-<span id="cb2-41"><a href="index.html#cb2-41" aria-hidden="true" tabindex="-1"></a><span class="co"># ############################################################################</span></span>
-<span id="cb2-42"><a href="index.html#cb2-42" aria-hidden="true" tabindex="-1"></a><span class="co"># # Now I can pull out the heading...</span></span>
-<span id="cb2-43"><a href="index.html#cb2-43" aria-hidden="true" tabindex="-1"></a><span class="co"># ############################################################################</span></span>
+<span id="cb2-40"><a href="index.html#cb2-40" aria-hidden="true" tabindex="-1"></a><span class="co"># #</span></span>
+<span id="cb2-41"><a href="index.html#cb2-41" aria-hidden="true" tabindex="-1"></a><span class="co"># # ############################################################################</span></span>
+<span id="cb2-42"><a href="index.html#cb2-42" aria-hidden="true" tabindex="-1"></a><span class="co"># # # Now I can pull out the heading...</span></span>
+<span id="cb2-43"><a href="index.html#cb2-43" aria-hidden="true" tabindex="-1"></a><span class="co"># # ############################################################################</span></span>
 <span id="cb2-44"><a href="index.html#cb2-44" aria-hidden="true" tabindex="-1"></a><span class="co"># title_idx = str_locate_all(pattern=&#39;&lt;TITLE&gt;&#39;,text)</span></span>
 <span id="cb2-45"><a href="index.html#cb2-45" aria-hidden="true" tabindex="-1"></a><span class="co"># head=vector()</span></span>
 <span id="cb2-46"><a href="index.html#cb2-46" aria-hidden="true" tabindex="-1"></a><span class="co"># for(i in 1:(length(text))){</span></span>
@@ -298,10 +296,10 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <span id="cb2-50"><a href="index.html#cb2-50" aria-hidden="true" tabindex="-1"></a><span class="co">#       head[i]=substr(text[i], title_idx[[i]][1,2]+1,title_idx[[i]][2,1]-1)</span></span>
 <span id="cb2-51"><a href="index.html#cb2-51" aria-hidden="true" tabindex="-1"></a><span class="co">#     }</span></span>
 <span id="cb2-52"><a href="index.html#cb2-52" aria-hidden="true" tabindex="-1"></a><span class="co"># }</span></span>
-<span id="cb2-53"><a href="index.html#cb2-53" aria-hidden="true" tabindex="-1"></a><span class="co"># head=gsub(&#39;&amp;lt;&#39;,&#39;&lt;&#39;,head)</span></span>
-<span id="cb2-54"><a href="index.html#cb2-54" aria-hidden="true" tabindex="-1"></a><span class="co"># ############################################################################</span></span>
-<span id="cb2-55"><a href="index.html#cb2-55" aria-hidden="true" tabindex="-1"></a><span class="co"># # ...and the raw article text. </span></span>
-<span id="cb2-56"><a href="index.html#cb2-56" aria-hidden="true" tabindex="-1"></a><span class="co"># ############################################################################</span></span>
+<span id="cb2-53"><a href="index.html#cb2-53" aria-hidden="true" tabindex="-1"></a><span class="co"># head=gsub(&#39;&amp;lt;&#39;,&#39;&lt;&#39;,head, fixed=T)</span></span>
+<span id="cb2-54"><a href="index.html#cb2-54" aria-hidden="true" tabindex="-1"></a><span class="co"># # ############################################################################</span></span>
+<span id="cb2-55"><a href="index.html#cb2-55" aria-hidden="true" tabindex="-1"></a><span class="co"># # # ...and the raw article text.</span></span>
+<span id="cb2-56"><a href="index.html#cb2-56" aria-hidden="true" tabindex="-1"></a><span class="co"># # ############################################################################</span></span>
 <span id="cb2-57"><a href="index.html#cb2-57" aria-hidden="true" tabindex="-1"></a><span class="co"># body_idx = str_locate_all(pattern=&#39;&lt;BODY&gt;&#39;,text)</span></span>
 <span id="cb2-58"><a href="index.html#cb2-58" aria-hidden="true" tabindex="-1"></a><span class="co"># body=vector()</span></span>
 <span id="cb2-59"><a href="index.html#cb2-59" aria-hidden="true" tabindex="-1"></a><span class="co"># for(i in 1:(length(text))){</span></span>
@@ -311,10 +309,15 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <span id="cb2-63"><a href="index.html#cb2-63" aria-hidden="true" tabindex="-1"></a><span class="co">#       body[i]=substr(text[i], body_idx[[i]][1,2]+1,body_idx[[i]][2,1]-1)</span></span>
 <span id="cb2-64"><a href="index.html#cb2-64" aria-hidden="true" tabindex="-1"></a><span class="co">#     }</span></span>
 <span id="cb2-65"><a href="index.html#cb2-65" aria-hidden="true" tabindex="-1"></a><span class="co"># }</span></span>
-<span id="cb2-66"><a href="index.html#cb2-66" aria-hidden="true" tabindex="-1"></a><span class="co"># text=body</span></span>
-<span id="cb2-67"><a href="index.html#cb2-67" aria-hidden="true" tabindex="-1"></a><span class="co"># Reuters &lt;- Corpus(VectorSource(text))</span></span>
-<span id="cb2-68"><a href="index.html#cb2-68" aria-hidden="true" tabindex="-1"></a><span class="co"># save(text,head,Reuters,lewissplit,datetime,file=&#39;RawDataRead.RData&#39;)</span></span>
-<span id="cb2-69"><a href="index.html#cb2-69" aria-hidden="true" tabindex="-1"></a><span class="co"># load(&#39;docs/final_data_plots/RawDataRead.RData&#39;)</span></span></code></pre></div>
+<span id="cb2-66"><a href="index.html#cb2-66" aria-hidden="true" tabindex="-1"></a><span class="co"># # Clean up Briefs</span></span>
+<span id="cb2-67"><a href="index.html#cb2-67" aria-hidden="true" tabindex="-1"></a><span class="co"># body = gsub(&quot;TYPE=\&quot;BRIEF\&quot;&gt;&amp;#2; ******&lt;TITLE&gt;&quot;,&#39;&#39;,body, fixed=T)</span></span>
+<span id="cb2-68"><a href="index.html#cb2-68" aria-hidden="true" tabindex="-1"></a><span class="co"># body = gsub(&quot;&lt;TITLE&gt;Blah blah blah. &amp;#3;&quot;, &#39;&#39;,body, fixed=T)</span></span>
+<span id="cb2-69"><a href="index.html#cb2-69" aria-hidden="true" tabindex="-1"></a><span class="co"># </span></span>
+<span id="cb2-70"><a href="index.html#cb2-70" aria-hidden="true" tabindex="-1"></a><span class="co"># </span></span>
+<span id="cb2-71"><a href="index.html#cb2-71" aria-hidden="true" tabindex="-1"></a><span class="co">#  text=body</span></span>
+<span id="cb2-72"><a href="index.html#cb2-72" aria-hidden="true" tabindex="-1"></a><span class="co">#  Reuters &lt;- Corpus(VectorSource(text))</span></span>
+<span id="cb2-73"><a href="index.html#cb2-73" aria-hidden="true" tabindex="-1"></a><span class="co"># save(text,head,Reuters,lewissplit,datetime,file=&#39;docs/final_data_plots/RawDataRead.RData&#39;)</span></span>
+<span id="cb2-74"><a href="index.html#cb2-74" aria-hidden="true" tabindex="-1"></a> <span class="fu">load</span>(<span class="st">&#39;docs/final_data_plots/RawDataRead.RData&#39;</span>)</span></code></pre></div>
 <ol style="list-style-type: decimal">
 <li>Make lower case, emove stop words + “Reuters”, punctuation, and numbers; Employ stemming.</li>
 <li>Create binary term-document matrix to remove terms occurring in less than 5 documents.</li>
@@ -358,10 +361,10 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <span id="cb3-35"><a href="index.html#cb3-35" aria-hidden="true" tabindex="-1"></a><span class="co"># # add breaks for text wrapping</span></span>
 <span id="cb3-36"><a href="index.html#cb3-36" aria-hidden="true" tabindex="-1"></a><span class="co"># #############################################################</span></span>
 <span id="cb3-37"><a href="index.html#cb3-37" aria-hidden="true" tabindex="-1"></a><span class="co"># raw_text = gsub(&quot;(.{60,}?)\\s&quot;, &quot;\\1&lt;br&gt;&quot;, raw_text)</span></span>
-<span id="cb3-38"><a href="index.html#cb3-38" aria-hidden="true" tabindex="-1"></a><span class="co"># ############################################################</span></span>
-<span id="cb3-39"><a href="index.html#cb3-39" aria-hidden="true" tabindex="-1"></a><span class="co"># Save data to avoid repeat processing</span></span>
-<span id="cb3-40"><a href="index.html#cb3-40" aria-hidden="true" tabindex="-1"></a><span class="co"># ############################################################</span></span>
-<span id="cb3-41"><a href="index.html#cb3-41" aria-hidden="true" tabindex="-1"></a><span class="co">#save(raw_text,head,lewissplit,tdm,R,datetime, file=&#39;processedV2.RData&#39;)</span></span>
+<span id="cb3-38"><a href="index.html#cb3-38" aria-hidden="true" tabindex="-1"></a><span class="co"># # ############################################################</span></span>
+<span id="cb3-39"><a href="index.html#cb3-39" aria-hidden="true" tabindex="-1"></a><span class="co"># # Save data to avoid repeat processing</span></span>
+<span id="cb3-40"><a href="index.html#cb3-40" aria-hidden="true" tabindex="-1"></a><span class="co"># # ############################################################</span></span>
+<span id="cb3-41"><a href="index.html#cb3-41" aria-hidden="true" tabindex="-1"></a><span class="co"># save(raw_text,head,lewissplit,tdm,R,datetime, file=&#39;docs/final_data_plots/processedV2.RData&#39;)</span></span>
 <span id="cb3-42"><a href="index.html#cb3-42" aria-hidden="true" tabindex="-1"></a><span class="fu">load</span>(<span class="st">&#39;docs/final_data_plots/processedV2.RData&#39;</span>)</span></code></pre></div>
 </div>
             </section>
