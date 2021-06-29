@@ -569,4 +569,65 @@ fig <- fig %>%
 ```
 
 [Full Page Visualization](https://shainarace.github.io/Reuters/All_centroid_refined_clusters.html)
- 
+
+# UMAP of Full Sparse Matrix in Python
+
+We first write the sparse normalized tf-idf matrix to file:
+
+```{r eval =F}
+writeMM(tfidf_tdm, file='/Users/shaina/Library/Mobile Documents/com~apple~CloudDocs/Datasets and Code/reuters21578/tfidf_norm_tdm')
+```
+
+Then after installing umap-learn via 
+
+```
+git clone https://github.com/lmcinnes/umap
+cd umap
+pip install --user -r requirements.txt
+python setup.py install --user
+```
+
+```{python eval = F}
+import numpy as np
+import scipy.sparse
+import sympy
+import sklearn.datasets
+import sklearn.feature_extraction.text
+import umap.umap_ as umap
+import umap.plot
+import matplotlib.pyplot as plt
+import csv 
+
+A = scipy.io.mmread('/Users/shaina/Library/Mobile Documents/com~apple~CloudDocs/Datasets and Code/reuters21578/tfidf_norm_tdm')
+A=A.tolil()
+A=A.transpose()
+mapper = umap.umap_.UMAP(metric='cosine', random_state=42, low_memory=True).fit(A)
+umap.plot.points(mapper, values=np.arange(19744), theme='viridis')
+```
+
+We then exported the layout in `mapper.embedding_` for exploration with our usual plot function:
+
+```{python eval = F}
+filename = "/Users/shaina/Library/Mobile Documents/com~apple~CloudDocs/Datasets and Code/reuters21578/UMAPofTFIDFsparse.csv"
+    
+# writing to csv file 
+with open(filename, 'w') as csvfile: 
+    csvwriter = csv.writer(csvfile) 
+    csvwriter.writerows(mapper.embedding_)
+```
+
+```{r eval=F}
+layout = read.csv("/Users/shaina/Library/Mobile Documents/com~apple~CloudDocs/Datasets and Code/reuters21578/UMAPofTFIDFsparse.csv", header=F)
+fig <- plot_ly(type = 'scatter', mode = 'markers')
+fig <- fig %>%
+  add_trace(
+    x = layout[,1],
+    y = layout[,2],
+    marker = list(color = 'green',opacity=0.6),
+    showlegend = F
+  )
+
+#saveWidget(fig, file='docs/SparseDataIntoUMAP.html')
+```
+
+[Full Page Visualization](https://shainarace.github.io/Reuters/SparseDataIntoUMAP.html)

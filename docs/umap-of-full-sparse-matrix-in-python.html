@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="" xml:lang="">
+<head>
+
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <title>7 UMAP of Full Sparse Matrix in Python | 21,578 Reuters’ Newswires</title>
+  <meta name="description" content="7 UMAP of Full Sparse Matrix in Python | 21,578 Reuters’ Newswires" />
+  <meta name="generator" content="bookdown 0.21 and GitBook 2.6.7" />
+
+  <meta property="og:title" content="7 UMAP of Full Sparse Matrix in Python | 21,578 Reuters’ Newswires" />
+  <meta property="og:type" content="book" />
+  
+  
+  
+  <meta name="github-repo" content="shainarace/Reuters" />
+
+  <meta name="twitter:card" content="summary" />
+  <meta name="twitter:title" content="7 UMAP of Full Sparse Matrix in Python | 21,578 Reuters’ Newswires" />
+  
+  
+  
+
+<meta name="author" content="Shaina Race Bennett, PhD" />
+
+
+
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black" />
+  
+  
+<link rel="prev" href="cluster-refinement.html"/>
+
+<script src="libs/header-attrs-2.6/header-attrs.js"></script>
+<script src="libs/jquery-2.2.3/jquery.min.js"></script>
+<link href="libs/gitbook-2.6.7/css/style.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-table.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-bookdown.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-highlight.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-search.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-fontsettings.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-clipboard.css" rel="stylesheet" />
+
+
+
+
+
+
+
+
+
+
+
+<style type="text/css">
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+    color: #aaaaaa;
+  }
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code span.at { color: #7d9029; } /* Attribute */
+code span.bn { color: #40a070; } /* BaseN */
+code span.bu { } /* BuiltIn */
+code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code span.ch { color: #4070a0; } /* Char */
+code span.cn { color: #880000; } /* Constant */
+code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code span.dt { color: #902000; } /* DataType */
+code span.dv { color: #40a070; } /* DecVal */
+code span.er { color: #ff0000; font-weight: bold; } /* Error */
+code span.ex { } /* Extension */
+code span.fl { color: #40a070; } /* Float */
+code span.fu { color: #06287e; } /* Function */
+code span.im { } /* Import */
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code span.op { color: #666666; } /* Operator */
+code span.ot { color: #007020; } /* Other */
+code span.pp { color: #bc7a00; } /* Preprocessor */
+code span.sc { color: #4070a0; } /* SpecialChar */
+code span.ss { color: #bb6688; } /* SpecialString */
+code span.st { color: #4070a0; } /* String */
+code span.va { color: #19177c; } /* Variable */
+code span.vs { color: #4070a0; } /* VerbatimString */
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+</style>
+
+<link rel="stylesheet" href="style.css" type="text/css" />
+</head>
+
+<body>
+
+
+
+  <div class="book without-animation with-summary font-size-2 font-family-1" data-basepath=".">
+
+    <div class="book-summary">
+      <nav role="navigation">
+
+<ul class="summary">
+<li><a style="font-weight:bold, text-align:center" href="https://github.com/shainarace/Reuters">Shaina Race Bennett, PhD</a>
+
+<li class="divider"></li>
+<li class="chapter" data-level="1" data-path="index.html"><a href="index.html"><i class="fa fa-check"></i><b>1</b> Prepare Data</a></li>
+<li class="chapter" data-level="2" data-path="exploratory-analysis.html"><a href="exploratory-analysis.html"><i class="fa fa-check"></i><b>2</b> Exploratory Analysis</a>
+<ul>
+<li class="chapter" data-level="2.1" data-path="exploratory-analysis.html"><a href="exploratory-analysis.html#term-frequencies"><i class="fa fa-check"></i><b>2.1</b> Term Frequencies</a>
+<ul>
+<li class="chapter" data-level="" data-path="exploratory-analysis.html"><a href="exploratory-analysis.html#documents-per-word"><i class="fa fa-check"></i>Documents per word</a></li>
+<li class="chapter" data-level="" data-path="exploratory-analysis.html"><a href="exploratory-analysis.html#words-per-doc"><i class="fa fa-check"></i>Words per doc</a></li>
+<li class="chapter" data-level="" data-path="exploratory-analysis.html"><a href="exploratory-analysis.html#tf-idf-per-word"><i class="fa fa-check"></i>TF-IDF per word</a></li>
+</ul></li>
+<li class="chapter" data-level="2.2" data-path="exploratory-analysis.html"><a href="exploratory-analysis.html#via-svd"><i class="fa fa-check"></i><b>2.2</b> via SVD</a>
+<ul>
+<li class="chapter" data-level="" data-path="exploratory-analysis.html"><a href="exploratory-analysis.html#screeplot"><i class="fa fa-check"></i>Screeplot</a></li>
+<li class="chapter" data-level="" data-path="exploratory-analysis.html"><a href="exploratory-analysis.html#d-projection"><i class="fa fa-check"></i>2-D Projection</a></li>
+</ul></li>
+</ul></li>
+<li class="chapter" data-level="3" data-path="umap.html"><a href="umap.html"><i class="fa fa-check"></i><b>3</b> UMAP</a></li>
+<li class="chapter" data-level="4" data-path="clustering-hdbscan.html"><a href="clustering-hdbscan.html"><i class="fa fa-check"></i><b>4</b> Clustering: HDBSCAN</a></li>
+<li class="chapter" data-level="5" data-path="the-grand-visualization.html"><a href="the-grand-visualization.html"><i class="fa fa-check"></i><b>5</b> The Grand Visualization</a>
+<ul>
+<li class="chapter" data-level="5.1" data-path="the-grand-visualization.html"><a href="the-grand-visualization.html#omit-some-noise-points-for-more-cluster-clarity"><i class="fa fa-check"></i><b>5.1</b> Omit some noise points for more cluster clarity</a></li>
+</ul></li>
+<li class="chapter" data-level="6" data-path="cluster-refinement.html"><a href="cluster-refinement.html"><i class="fa fa-check"></i><b>6</b> Cluster Refinement</a>
+<ul>
+<li class="chapter" data-level="6.1" data-path="cluster-refinement.html"><a href="cluster-refinement.html#refinement-idea-1-clustering-the-centroids"><i class="fa fa-check"></i><b>6.1</b> Refinement Idea 1: Clustering the centroids</a>
+<ul>
+<li class="chapter" data-level="" data-path="cluster-refinement.html"><a href="cluster-refinement.html#topic-keywords-for-clusters"><i class="fa fa-check"></i>Topic Keywords for Clusters</a></li>
+<li class="chapter" data-level="" data-path="cluster-refinement.html"><a href="cluster-refinement.html#cluster-summarization"><i class="fa fa-check"></i>Cluster Summarization</a></li>
+<li class="chapter" data-level="" data-path="cluster-refinement.html"><a href="cluster-refinement.html#visualization-of-refined-clusters"><i class="fa fa-check"></i>Visualization of Refined Clusters</a></li>
+</ul></li>
+</ul></li>
+<li class="chapter" data-level="7" data-path="umap-of-full-sparse-matrix-in-python.html"><a href="umap-of-full-sparse-matrix-in-python.html"><i class="fa fa-check"></i><b>7</b> UMAP of Full Sparse Matrix in Python</a></li>
+<li class="divider"></li>
+<li><a href="https://github.com/rstudio/bookdown" target="blank">Published with bookdown</a></li>
+</ul>
+
+      </nav>
+    </div>
+
+    <div class="book-body">
+      <div class="body-inner">
+        <div class="book-header" role="navigation">
+          <h1>
+            <i class="fa fa-circle-o-notch fa-spin"></i><a href="./">21,578 Reuters’ Newswires</a>
+          </h1>
+        </div>
+
+        <div class="page-wrapper" tabindex="-1" role="main">
+          <div class="page-inner">
+
+            <section class="normal" id="section-">
+<div id="umap-of-full-sparse-matrix-in-python" class="section level1" number="7">
+<h1><span class="header-section-number">7</span> UMAP of Full Sparse Matrix in Python</h1>
+<p>We first write the sparse normalized tf-idf matrix to file:</p>
+<div class="sourceCode" id="cb20"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb20-1"><a href="umap-of-full-sparse-matrix-in-python.html#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="fu">writeMM</span>(tfidf_tdm, <span class="at">file=</span><span class="st">&#39;/Users/shaina/Library/Mobile Documents/com~apple~CloudDocs/Datasets and Code/reuters21578/tfidf_norm_tdm&#39;</span>)</span></code></pre></div>
+<p>Then after installing umap-learn via</p>
+<pre><code>git clone https://github.com/lmcinnes/umap
+cd umap
+pip install --user -r requirements.txt
+python setup.py install --user</code></pre>
+<div class="sourceCode" id="cb22"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb22-1"><a href="umap-of-full-sparse-matrix-in-python.html#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
+<span id="cb22-2"><a href="umap-of-full-sparse-matrix-in-python.html#cb22-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> scipy.sparse</span>
+<span id="cb22-3"><a href="umap-of-full-sparse-matrix-in-python.html#cb22-3" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> sympy</span>
+<span id="cb22-4"><a href="umap-of-full-sparse-matrix-in-python.html#cb22-4" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> sklearn.datasets</span>
+<span id="cb22-5"><a href="umap-of-full-sparse-matrix-in-python.html#cb22-5" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> sklearn.feature_extraction.text</span>
+<span id="cb22-6"><a href="umap-of-full-sparse-matrix-in-python.html#cb22-6" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> umap.umap_ <span class="im">as</span> umap</span>
+<span id="cb22-7"><a href="umap-of-full-sparse-matrix-in-python.html#cb22-7" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> umap.plot</span>
+<span id="cb22-8"><a href="umap-of-full-sparse-matrix-in-python.html#cb22-8" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> matplotlib.pyplot <span class="im">as</span> plt</span>
+<span id="cb22-9"><a href="umap-of-full-sparse-matrix-in-python.html#cb22-9" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> csv </span>
+<span id="cb22-10"><a href="umap-of-full-sparse-matrix-in-python.html#cb22-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-11"><a href="umap-of-full-sparse-matrix-in-python.html#cb22-11" aria-hidden="true" tabindex="-1"></a>A <span class="op">=</span> scipy.io.mmread(<span class="st">&#39;/Users/shaina/Library/Mobile Documents/com~apple~CloudDocs/Datasets and Code/reuters21578/tfidf_norm_tdm&#39;</span>)</span>
+<span id="cb22-12"><a href="umap-of-full-sparse-matrix-in-python.html#cb22-12" aria-hidden="true" tabindex="-1"></a>A<span class="op">=</span>A.tolil()</span>
+<span id="cb22-13"><a href="umap-of-full-sparse-matrix-in-python.html#cb22-13" aria-hidden="true" tabindex="-1"></a>A<span class="op">=</span>A.transpose()</span>
+<span id="cb22-14"><a href="umap-of-full-sparse-matrix-in-python.html#cb22-14" aria-hidden="true" tabindex="-1"></a>mapper <span class="op">=</span> umap.umap_.UMAP(metric<span class="op">=</span><span class="st">&#39;cosine&#39;</span>, random_state<span class="op">=</span><span class="dv">42</span>, low_memory<span class="op">=</span><span class="va">True</span>).fit(A)</span>
+<span id="cb22-15"><a href="umap-of-full-sparse-matrix-in-python.html#cb22-15" aria-hidden="true" tabindex="-1"></a>umap.plot.points(mapper, values<span class="op">=</span>np.arange(<span class="dv">19744</span>), theme<span class="op">=</span><span class="st">&#39;viridis&#39;</span>)</span></code></pre></div>
+<p>We then exported the layout in <code>mapper.embedding_</code> for exploration with our usual plot function:</p>
+<div class="sourceCode" id="cb23"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb23-1"><a href="umap-of-full-sparse-matrix-in-python.html#cb23-1" aria-hidden="true" tabindex="-1"></a>filename <span class="op">=</span> <span class="st">&quot;/Users/shaina/Library/Mobile Documents/com~apple~CloudDocs/Datasets and Code/reuters21578/UMAPofTFIDFsparse.csv&quot;</span></span>
+<span id="cb23-2"><a href="umap-of-full-sparse-matrix-in-python.html#cb23-2" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb23-3"><a href="umap-of-full-sparse-matrix-in-python.html#cb23-3" aria-hidden="true" tabindex="-1"></a><span class="co"># writing to csv file </span></span>
+<span id="cb23-4"><a href="umap-of-full-sparse-matrix-in-python.html#cb23-4" aria-hidden="true" tabindex="-1"></a><span class="cf">with</span> <span class="bu">open</span>(filename, <span class="st">&#39;w&#39;</span>) <span class="im">as</span> csvfile: </span>
+<span id="cb23-5"><a href="umap-of-full-sparse-matrix-in-python.html#cb23-5" aria-hidden="true" tabindex="-1"></a>    csvwriter <span class="op">=</span> csv.writer(csvfile) </span>
+<span id="cb23-6"><a href="umap-of-full-sparse-matrix-in-python.html#cb23-6" aria-hidden="true" tabindex="-1"></a>    csvwriter.writerows(mapper.embedding_)</span></code></pre></div>
+<div class="sourceCode" id="cb24"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb24-1"><a href="umap-of-full-sparse-matrix-in-python.html#cb24-1" aria-hidden="true" tabindex="-1"></a>layout <span class="ot">=</span> <span class="fu">read.csv</span>(<span class="st">&quot;/Users/shaina/Library/Mobile Documents/com~apple~CloudDocs/Datasets and Code/reuters21578/UMAPofTFIDFsparse.csv&quot;</span>, <span class="at">header=</span>F)</span>
+<span id="cb24-2"><a href="umap-of-full-sparse-matrix-in-python.html#cb24-2" aria-hidden="true" tabindex="-1"></a>fig <span class="ot">&lt;-</span> <span class="fu">plot_ly</span>(<span class="at">type =</span> <span class="st">&#39;scatter&#39;</span>, <span class="at">mode =</span> <span class="st">&#39;markers&#39;</span>)</span>
+<span id="cb24-3"><a href="umap-of-full-sparse-matrix-in-python.html#cb24-3" aria-hidden="true" tabindex="-1"></a>fig <span class="ot">&lt;-</span> fig <span class="sc">%&gt;%</span></span>
+<span id="cb24-4"><a href="umap-of-full-sparse-matrix-in-python.html#cb24-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">add_trace</span>(</span>
+<span id="cb24-5"><a href="umap-of-full-sparse-matrix-in-python.html#cb24-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">x =</span> layout[,<span class="dv">1</span>],</span>
+<span id="cb24-6"><a href="umap-of-full-sparse-matrix-in-python.html#cb24-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">y =</span> layout[,<span class="dv">2</span>],</span>
+<span id="cb24-7"><a href="umap-of-full-sparse-matrix-in-python.html#cb24-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">marker =</span> <span class="fu">list</span>(<span class="at">color =</span> <span class="st">&#39;green&#39;</span>,<span class="at">opacity=</span><span class="fl">0.6</span>),</span>
+<span id="cb24-8"><a href="umap-of-full-sparse-matrix-in-python.html#cb24-8" aria-hidden="true" tabindex="-1"></a>    <span class="at">showlegend =</span> F</span>
+<span id="cb24-9"><a href="umap-of-full-sparse-matrix-in-python.html#cb24-9" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb24-10"><a href="umap-of-full-sparse-matrix-in-python.html#cb24-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-11"><a href="umap-of-full-sparse-matrix-in-python.html#cb24-11" aria-hidden="true" tabindex="-1"></a><span class="co">#saveWidget(fig, file=&#39;docs/SparseDataIntoUMAP.html&#39;)</span></span></code></pre></div>
+<p><a href="https://shainarace.github.io/Reuters/SparseDataIntoUMAP.html">Full Page Visualization</a></p>
+
+</div>
+            </section>
+
+          </div>
+        </div>
+      </div>
+<a href="cluster-refinement.html" class="navigation navigation-prev navigation-unique" aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
+
+    </div>
+  </div>
+<script src="libs/gitbook-2.6.7/js/app.min.js"></script>
+<script src="libs/gitbook-2.6.7/js/lunr.js"></script>
+<script src="libs/gitbook-2.6.7/js/clipboard.min.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-search.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-sharing.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-fontsettings.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-bookdown.js"></script>
+<script src="libs/gitbook-2.6.7/js/jquery.highlight.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-clipboard.js"></script>
+<script>
+gitbook.require(["gitbook"], function(gitbook) {
+gitbook.start({
+"sharing": {
+"github": false,
+"facebook": true,
+"twitter": true,
+"linkedin": false,
+"weibo": false,
+"instapaper": false,
+"vk": false,
+"all": ["facebook", "twitter", "linkedin", "weibo", "instapaper"]
+},
+"fontsettings": {
+"theme": "white",
+"family": "sans",
+"size": 2
+},
+"edit": {
+"link": null,
+"text": null
+},
+"history": {
+"link": null,
+"text": null
+},
+"view": {
+"link": null,
+"text": null
+},
+"download": null,
+"toc": {
+"collapse": "section",
+"toc": null
+}
+});
+});
+</script>
+
+</body>
+
+</html>
